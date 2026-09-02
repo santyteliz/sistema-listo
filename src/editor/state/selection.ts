@@ -12,4 +12,11 @@ export type EditorSelection =
       fontSize: number;
       inverted: boolean;
       curveOffset: number;
+    }
+  | {
+      type: 'icon';
+      iconId: string;
+      flipX: boolean;
+      flipY: boolean;
+      angleDeg: number;
     };

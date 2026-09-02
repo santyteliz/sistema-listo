@@ -1,7 +1,19 @@
-import type { Canvas, IText } from 'fabric';
+import type { Canvas, FabricObject, IText } from 'fabric';
 import type { VirolaConfig } from '../../config/virola.config';
 import { createCurvedText, isTextObject, CURVE_CUSTOM_PROPERTIES } from './curvedText';
 import { renderGuides } from './guides';
+import {
+  applyIconAngle,
+  buildReplacementIcon,
+  createIconObject,
+  getDefaultIconAngle,
+  getIconDefinition,
+  isIconObject,
+  ICON_CUSTOM_PROPERTIES,
+} from './iconElement';
+
+/** Propiedades propias (no nativas de Fabric) que hay que pedirle a toObject() que incluya. */
+const CUSTOM_PROPERTIES = [...CURVE_CUSTOM_PROPERTIES, ...ICON_CUSTOM_PROPERTIES];
 
 /**
  * Capa de comandos entre la UI y Fabric.js. Los componentes de React nunca
@@ -23,6 +35,16 @@ export interface EditorActions {
   setSelectedTextInverted: (inverted: boolean) => void;
   /** Corre el texto seleccionado a lo largo del arco (pathStartOffset). */
   setSelectedTextCurveOffset: (offset: number) => void;
+  /** Agrega un ícono de la biblioteca (por su id), ubicado sobre el anillo, y lo selecciona. */
+  addIcon: (iconId: string) => void;
+  /** Reemplaza la figura del ícono seleccionado por otra de la biblioteca, sin mover/rotar/escalar. */
+  replaceSelectedIcon: (iconId: string) => void;
+  /** Espeja horizontalmente el ícono seleccionado. */
+  setSelectedIconFlipX: (flip: boolean) => void;
+  /** Invierte verticalmente el ícono seleccionado. */
+  setSelectedIconFlipY: (flip: boolean) => void;
+  /** Ubica el ícono seleccionado en un ángulo dado alrededor de la virola. */
+  setSelectedIconAngle: (angleDeg: number) => void;
   /** Elimina el objeto actualmente seleccionado (si hay uno). */
   removeSelectedObject: () => void;
   /** Serializa el diseño actual. Las guías quedan afuera (excludeFromExport). */
@@ -37,6 +59,11 @@ export function createEditorActions(canvas: Canvas, config: VirolaConfig): Edito
     return isTextObject(active) ? active : null;
   }
 
+  function getSelectedIcon() {
+    const active = canvas.getActiveObject();
+    return isIconObject(active) ? active : null;
+  }
+
   /**
    * Dispara el mismo evento que usa la edición nativa de Fabric.js (doble
    * click sobre el texto), para que el recálculo de curvatura y la
@@ -45,6 +72,16 @@ export function createEditorActions(canvas: Canvas, config: VirolaConfig): Edito
    */
   function notifyTextChanged(text: IText): void {
     canvas.fire('text:changed', { target: text });
+  }
+
+  /**
+   * Dispara el evento genérico de Fabric.js para "un objeto cambió" —
+   * equivalente a lo anterior pero para íconos (Fabric.js ya lo dispara
+   * solo después de mover/escalar/rotar con el mouse; acá se reutiliza el
+   * mismo camino para los cambios que vienen del panel).
+   */
+  function notifyObjectModified(target: FabricObject): void {
+    canvas.fire('object:modified', { target });
   }
 
   function addCurvedText(): void {
@@ -103,6 +140,67 @@ export function createEditorActions(canvas: Canvas, config: VirolaConfig): Edito
     notifyTextChanged(text);
   }
 
+  function addIcon(iconId: string): void {
+    const iconDef = getIconDefinition(iconId);
+    if (!iconDef) {
+      return;
+    }
+    const existingIconCount = canvas.getObjects().filter(isIconObject).length;
+    const angleDeg = getDefaultIconAngle(existingIconCount);
+    const icon = createIconObject(iconDef, config, angleDeg);
+    canvas.add(icon);
+    canvas.setActiveObject(icon);
+    canvas.requestRenderAll();
+  }
+
+  function replaceSelectedIcon(iconId: string): void {
+    const current = getSelectedIcon();
+    if (!current) {
+      return;
+    }
+    const iconDef = getIconDefinition(iconId);
+    if (!iconDef) {
+      return;
+    }
+    const replacement = buildReplacementIcon(current, iconDef, config);
+    canvas.remove(current);
+    canvas.add(replacement);
+    canvas.setActiveObject(replacement);
+    canvas.requestRenderAll();
+  }
+
+  function setSelectedIconFlipX(flip: boolean): void {
+    const icon = getSelectedIcon();
+    if (!icon) {
+      return;
+    }
+    icon.set('flipX', flip);
+    icon.setCoords();
+    canvas.requestRenderAll();
+    notifyObjectModified(icon);
+  }
+
+  function setSelectedIconFlipY(flip: boolean): void {
+    const icon = getSelectedIcon();
+    if (!icon) {
+      return;
+    }
+    icon.set('flipY', flip);
+    icon.setCoords();
+    canvas.requestRenderAll();
+    notifyObjectModified(icon);
+  }
+
+  function setSelectedIconAngle(angleDeg: number): void {
+    const icon = getSelectedIcon();
+    if (!icon) {
+      return;
+    }
+    applyIconAngle(icon, angleDeg, config);
+    canvas.requestRenderAll();
+    notifyObjectModified(icon);
+  }
+
   function removeSelectedObject(): void {
     const active = canvas.getActiveObject();
     if (!active) {
@@ -120,14 +218,15 @@ export function createEditorActions(canvas: Canvas, config: VirolaConfig): Edito
     // pero en el JSON serializado ese mismo objeto aparece como "IText". Si
     // en el futuro algo necesita filtrar objetos del JSON crudo por tipo
     // (antes de que loadFromJSON los reconstruya como instancias reales),
-    // tiene que comparar contra "IText", no contra "i-text".
+    // tiene que comparar contra "IText"/"Path", no contra "i-text"/"path".
     //
     // Se usa toObject(...) en vez de toJSON() porque en v6 toJSON() no
     // acepta propiedades adicionales a incluir — sin esto, la dirección de
-    // la curva y el corrimiento manual (propiedades propias, no nativas de
-    // Fabric) se perderían al guardar el diseño. Produce una estructura
-    // igual de compatible con loadFromJSON() (verificado en Chrome real).
-    return canvas.toObject([...CURVE_CUSTOM_PROPERTIES]);
+    // la curva de un texto y el ID/ángulo de un ícono (propiedades propias,
+    // no nativas de Fabric) se perderían al guardar el diseño. Produce una
+    // estructura igual de compatible con loadFromJSON() (verificado en
+    // Chrome real).
+    return canvas.toObject(CUSTOM_PROPERTIES);
   }
 
   async function restoreDesign(json: Record<string, unknown>): Promise<void> {
@@ -147,6 +246,11 @@ export function createEditorActions(canvas: Canvas, config: VirolaConfig): Edito
     setSelectedTextFontSize,
     setSelectedTextInverted,
     setSelectedTextCurveOffset,
+    addIcon,
+    replaceSelectedIcon,
+    setSelectedIconFlipX,
+    setSelectedIconFlipY,
+    setSelectedIconAngle,
     removeSelectedObject,
     serializeDesign,
     restoreDesign,

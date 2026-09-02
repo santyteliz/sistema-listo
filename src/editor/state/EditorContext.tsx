@@ -1,7 +1,15 @@
-import { createContext, useContext, useRef, type ReactNode, type RefObject } from 'react';
+import { createContext, useContext, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { useFabricCanvas } from '../canvas/useFabricCanvas';
 import type { EditorActions } from '../canvas/actions';
 import type { EditorSelection } from './selection';
+
+/**
+ * Estado del selector de íconos: cerrado, abierto para agregar uno nuevo, o
+ * abierto para reemplazar el ícono seleccionado (doble click sobre el
+ * canvas). Es estado puro de navegación de UI — no describe nada del canvas
+ * — así que vive acá y no en la capa de Fabric.
+ */
+export type IconPickerMode = 'closed' | 'add' | 'replace';
 
 interface EditorContextValue {
   /** Ref del elemento <canvas> del DOM; lo consume únicamente MateCanvas. */
@@ -10,6 +18,10 @@ interface EditorContextValue {
   actions: EditorActions | null;
   /** Estado mínimo de UI derivado de la selección actual en Fabric.js. */
   selection: EditorSelection;
+  iconPickerMode: IconPickerMode;
+  openIconPickerToAdd: () => void;
+  openIconPickerToReplace: () => void;
+  closeIconPicker: () => void;
 }
 
 const EditorContext = createContext<EditorContextValue | null>(null);
@@ -22,10 +34,23 @@ const EditorContext = createContext<EditorContextValue | null>(null);
  */
 export function EditorProvider({ children }: { children: ReactNode }) {
   const canvasElRef = useRef<HTMLCanvasElement>(null);
-  const { actions, selection } = useFabricCanvas(canvasElRef);
+  const [iconPickerMode, setIconPickerMode] = useState<IconPickerMode>('closed');
+  const { actions, selection } = useFabricCanvas(canvasElRef, {
+    onIconDoubleClick: () => setIconPickerMode('replace'),
+  });
 
   return (
-    <EditorContext.Provider value={{ canvasElRef, actions, selection }}>
+    <EditorContext.Provider
+      value={{
+        canvasElRef,
+        actions,
+        selection,
+        iconPickerMode,
+        openIconPickerToAdd: () => setIconPickerMode('add'),
+        openIconPickerToReplace: () => setIconPickerMode('replace'),
+        closeIconPicker: () => setIconPickerMode('closed'),
+      }}
+    >
       {children}
     </EditorContext.Provider>
   );

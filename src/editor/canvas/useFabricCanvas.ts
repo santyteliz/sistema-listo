@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import { Canvas, type IText } from 'fabric';
+import { Canvas, type FabricObject, type IText } from 'fabric';
 import { VIROLA_CONFIG } from '../../config/virola.config';
 import { renderGuides } from './guides';
 import { applyTextCurve, getCurveState, isTextObject, toTextSelection } from './curvedText';
+import { isIconObject, toIconSelection } from './iconElement';
 import { createEditorActions, type EditorActions } from './actions';
 import { preloadEditorFonts } from '../fonts/fontLibrary';
 import type { EditorSelection } from '../state/selection';
@@ -19,6 +20,11 @@ declare global {
   }
 }
 
+export interface UseFabricCanvasOptions {
+  /** Se llama cuando el usuario hace doble click sobre un ícono del canvas. */
+  onIconDoubleClick?: () => void;
+}
+
 /**
  * Crea y administra la instancia de Fabric.Canvas fuera del ciclo de
  * renderizado de React: se crea una sola vez al montar (useEffect +
@@ -28,10 +34,15 @@ declare global {
  * necesita: la capa de acciones (una vez que existe) y la selección actual
  * (ver docs/ARCHITECTURE.md).
  */
-export function useFabricCanvas(canvasElRef: RefObject<HTMLCanvasElement | null>) {
+export function useFabricCanvas(
+  canvasElRef: RefObject<HTMLCanvasElement | null>,
+  options: UseFabricCanvasOptions = {},
+) {
   const canvasRef = useRef<Canvas | null>(null);
   const [actions, setActions] = useState<EditorActions | null>(null);
   const [selection, setSelection] = useState<EditorSelection>({ type: 'none' });
+  const onIconDoubleClickRef = useRef(options.onIconDoubleClick);
+  onIconDoubleClickRef.current = options.onIconDoubleClick;
 
   useEffect(() => {
     const canvasEl = canvasElRef.current;
@@ -44,14 +55,30 @@ export function useFabricCanvas(canvasElRef: RefObject<HTMLCanvasElement | null>
       height: VIROLA_CONFIG.height,
       backgroundColor: '#f7f6f2',
       selection: true,
+      // NO usar perPixelTargetFind acá: probado y descartado. Con íconos de
+      // solo trazo (sin relleno, a propósito — ver iconLibrary.ts) el
+      // interior transparente no cuenta como "click válido" bajo detección
+      // por píxel, así que solo el contorno finito quedaría clickeable — el
+      // problema real (un ícono en su posición inicial coincidiendo con el
+      // cuadro delimitador del texto curvo) se resolvió separando los radios
+      // de texto e íconos en VirolaConfig/iconElement.ts en su lugar.
     });
     canvasRef.current = canvas;
 
     renderGuides(canvas, VIROLA_CONFIG);
 
+    function selectionToState(active: FabricObject | undefined): EditorSelection {
+      if (isTextObject(active)) {
+        return toTextSelection(active);
+      }
+      if (isIconObject(active)) {
+        return toIconSelection(active);
+      }
+      return { type: 'none' };
+    }
+
     function syncSelectionFromCanvas(): void {
-      const active = canvas.getActiveObject();
-      setSelection(isTextObject(active) ? toTextSelection(active) : { type: 'none' });
+      setSelection(selectionToState(canvas.getActiveObject()));
     }
 
     function handleTextChanged({ target }: { target: IText }): void {
@@ -60,10 +87,24 @@ export function useFabricCanvas(canvasElRef: RefObject<HTMLCanvasElement | null>
       setSelection(toTextSelection(target));
     }
 
+    function handleObjectModified({ target }: { target: FabricObject }): void {
+      if (isIconObject(target)) {
+        setSelection(toIconSelection(target));
+      }
+    }
+
+    function handleDoubleClick({ target }: { target?: FabricObject }): void {
+      if (isIconObject(target)) {
+        onIconDoubleClickRef.current?.();
+      }
+    }
+
     canvas.on('selection:created', syncSelectionFromCanvas);
     canvas.on('selection:updated', syncSelectionFromCanvas);
     canvas.on('selection:cleared', () => setSelection({ type: 'none' }));
     canvas.on('text:changed', handleTextChanged);
+    canvas.on('object:modified', handleObjectModified);
+    canvas.on('mouse:dblclick', handleDoubleClick);
 
     canvas.requestRenderAll();
 
