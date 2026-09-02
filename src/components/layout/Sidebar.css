@@ -1,0 +1,13 @@
+.sidebar {
+  width: 320px;
+  flex-shrink: 0;
+  padding: 20px;
+  background: #ffffff;
+  border-right: 1px solid #e0ded8;
+  overflow-y: auto;
+}
+
+.sidebar__placeholder {
+  font-size: 13px;
+  color: #888580;
+}

@@ -4,10 +4,15 @@ node_modules/
 
 # Salidas de build
 dist/
+dist-ssr/
 build/
 apps/*/dist/
 apps/*/build/
 packages/*/dist/
+
+# Logs de Vite / archivos locales del entorno
+logs
+*.local
 
 # Variables de entorno y secretos
 .env

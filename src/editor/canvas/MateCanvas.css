@@ -1,0 +1,22 @@
+.mate-canvas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  overflow: auto;
+  background: #f0efe9;
+}
+
+/*
+ * Fabric.js superpone un segundo <canvas> (upper-canvas, para selección e
+ * interacción) encima del que maneja React (lower-canvas), envueltos juntos
+ * en un div.canvas-container que genera la propia librería. El fondo/sombra
+ * va ahí, nunca en la regla "canvas" — si no, el upper-canvas (transparente
+ * por defecto) queda pintado de blanco y tapa todo lo que dibuja el de abajo.
+ */
+.mate-canvas .canvas-container {
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}

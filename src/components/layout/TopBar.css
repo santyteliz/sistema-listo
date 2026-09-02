@@ -1,0 +1,15 @@
+.top-bar {
+  display: flex;
+  align-items: center;
+  height: 56px;
+  padding: 0 20px;
+  background: #2b2a28;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.top-bar__title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
