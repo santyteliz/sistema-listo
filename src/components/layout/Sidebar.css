@@ -10,4 +10,26 @@
 .sidebar__placeholder {
   font-size: 13px;
   color: #888580;
+  margin-top: 20px;
+}
+
+.sidebar__add-text {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: #4a4a3f;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.sidebar__add-text:hover:not(:disabled) {
+  background: #3a3a32;
+}
+
+.sidebar__add-text:disabled {
+  background: #cfcdc6;
+  cursor: default;
 }

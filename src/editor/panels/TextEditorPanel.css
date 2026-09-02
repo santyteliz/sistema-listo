@@ -1,0 +1,48 @@
+.text-editor-panel {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e0ded8;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.text-editor-panel__title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+}
+
+.text-editor-panel__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: #666;
+}
+
+.text-editor-panel__field textarea {
+  font: inherit;
+  font-size: 14px;
+  color: #222;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+.text-editor-panel__delete {
+  align-self: flex-start;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: #a83a3a;
+  background: #fff;
+  border: 1px solid #d9b4b4;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.text-editor-panel__delete:hover {
+  background: #fbeeee;
+}

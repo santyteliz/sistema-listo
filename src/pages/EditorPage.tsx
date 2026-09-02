@@ -1,6 +1,7 @@
 import { TopBar } from '../components/layout/TopBar';
 import { Sidebar } from '../components/layout/Sidebar';
 import { MateCanvas } from '../editor/canvas/MateCanvas';
+import { EditorProvider } from '../editor/state/EditorContext';
 import './EditorPage.css';
 
 /**
@@ -10,12 +11,14 @@ import './EditorPage.css';
  */
 export function EditorPage() {
   return (
-    <div className="editor-page">
-      <TopBar />
-      <div className="editor-page__body">
-        <Sidebar />
-        <MateCanvas />
+    <EditorProvider>
+      <div className="editor-page">
+        <TopBar />
+        <div className="editor-page__body">
+          <Sidebar />
+          <MateCanvas />
+        </div>
       </div>
-    </div>
+    </EditorProvider>
   );
 }
