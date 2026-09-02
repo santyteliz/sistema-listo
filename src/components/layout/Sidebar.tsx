@@ -22,7 +22,7 @@ export function Sidebar() {
       </button>
 
       {selection.type === 'text' && actions ? (
-        <TextEditorPanel actions={actions} text={selection.text} />
+        <TextEditorPanel actions={actions} selection={selection} />
       ) : (
         <p className="sidebar__placeholder">
           Seleccioná un elemento del canvas para editarlo.

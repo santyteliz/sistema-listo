@@ -1,6 +1,6 @@
-import type { Canvas } from 'fabric';
+import type { Canvas, IText } from 'fabric';
 import type { VirolaConfig } from '../../config/virola.config';
-import { createCurvedText, isTextObject } from './curvedText';
+import { createCurvedText, isTextObject, CURVE_CUSTOM_PROPERTIES } from './curvedText';
 import { renderGuides } from './guides';
 
 /**
@@ -15,6 +15,14 @@ export interface EditorActions {
   addCurvedText: () => void;
   /** Actualiza el contenido del texto actualmente seleccionado (si hay uno). */
   updateSelectedTextContent: (text: string) => void;
+  /** Cambia la tipografía del texto seleccionado (espera a que cargue de verdad). */
+  setSelectedTextFontFamily: (fontFamily: string) => Promise<void>;
+  /** Cambia el tamaño del texto seleccionado. */
+  setSelectedTextFontSize: (fontSize: number) => void;
+  /** Invierte (o no) el sentido de la curva del texto seleccionado. */
+  setSelectedTextInverted: (inverted: boolean) => void;
+  /** Corre el texto seleccionado a lo largo del arco (pathStartOffset). */
+  setSelectedTextCurveOffset: (offset: number) => void;
   /** Elimina el objeto actualmente seleccionado (si hay uno). */
   removeSelectedObject: () => void;
   /** Serializa el diseño actual. Las guías quedan afuera (excludeFromExport). */
@@ -27,6 +35,16 @@ export function createEditorActions(canvas: Canvas, config: VirolaConfig): Edito
   function getSelectedText() {
     const active = canvas.getActiveObject();
     return isTextObject(active) ? active : null;
+  }
+
+  /**
+   * Dispara el mismo evento que usa la edición nativa de Fabric.js (doble
+   * click sobre el texto), para que el recálculo de curvatura y la
+   * sincronización del panel pasen siempre por el mismo camino — sin
+   * importar si el cambio vino del panel lateral o del canvas.
+   */
+  function notifyTextChanged(text: IText): void {
+    canvas.fire('text:changed', { target: text });
   }
 
   function addCurvedText(): void {
@@ -42,11 +60,47 @@ export function createEditorActions(canvas: Canvas, config: VirolaConfig): Edito
       return;
     }
     text.set('text', newText);
-    // Dispara el mismo evento que usa la edición nativa de Fabric (doble
-    // click sobre el texto), para que el recálculo de curvatura y la
-    // sincronización del panel pasen siempre por el mismo camino, sin
-    // importar si el cambio vino del panel lateral o del canvas.
-    canvas.fire('text:changed', { target: text });
+    notifyTextChanged(text);
+  }
+
+  async function setSelectedTextFontFamily(fontFamily: string): Promise<void> {
+    const text = getSelectedText();
+    if (!text) {
+      return;
+    }
+    // Espera a que la tipografía esté realmente lista antes de aplicarla,
+    // para que Fabric.js mida el ancho del texto con la fuente correcta
+    // (si no, el texto quedaría mal centrado hasta el próximo cambio).
+    await document.fonts.load(`${text.fontSize}px "${fontFamily}"`);
+    text.set('fontFamily', fontFamily);
+    notifyTextChanged(text);
+  }
+
+  function setSelectedTextFontSize(fontSize: number): void {
+    const text = getSelectedText();
+    if (!text) {
+      return;
+    }
+    text.set('fontSize', fontSize);
+    notifyTextChanged(text);
+  }
+
+  function setSelectedTextInverted(inverted: boolean): void {
+    const text = getSelectedText();
+    if (!text) {
+      return;
+    }
+    text.set('curveInverted', inverted);
+    notifyTextChanged(text);
+  }
+
+  function setSelectedTextCurveOffset(offset: number): void {
+    const text = getSelectedText();
+    if (!text) {
+      return;
+    }
+    text.set('curveOffset', offset);
+    notifyTextChanged(text);
   }
 
   function removeSelectedObject(): void {
@@ -67,7 +121,13 @@ export function createEditorActions(canvas: Canvas, config: VirolaConfig): Edito
     // en el futuro algo necesita filtrar objetos del JSON crudo por tipo
     // (antes de que loadFromJSON los reconstruya como instancias reales),
     // tiene que comparar contra "IText", no contra "i-text".
-    return canvas.toJSON();
+    //
+    // Se usa toObject(...) en vez de toJSON() porque en v6 toJSON() no
+    // acepta propiedades adicionales a incluir — sin esto, la dirección de
+    // la curva y el corrimiento manual (propiedades propias, no nativas de
+    // Fabric) se perderían al guardar el diseño. Produce una estructura
+    // igual de compatible con loadFromJSON() (verificado en Chrome real).
+    return canvas.toObject([...CURVE_CUSTOM_PROPERTIES]);
   }
 
   async function restoreDesign(json: Record<string, unknown>): Promise<void> {
@@ -83,6 +143,10 @@ export function createEditorActions(canvas: Canvas, config: VirolaConfig): Edito
     getCanvas: () => canvas,
     addCurvedText,
     updateSelectedTextContent,
+    setSelectedTextFontFamily,
+    setSelectedTextFontSize,
+    setSelectedTextInverted,
+    setSelectedTextCurveOffset,
     removeSelectedObject,
     serializeDesign,
     restoreDesign,

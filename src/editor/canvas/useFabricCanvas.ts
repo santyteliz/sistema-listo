@@ -2,8 +2,9 @@ import { useEffect, useRef, useState, type RefObject } from 'react';
 import { Canvas, type IText } from 'fabric';
 import { VIROLA_CONFIG } from '../../config/virola.config';
 import { renderGuides } from './guides';
-import { applyTextCurve, isTextObject } from './curvedText';
+import { applyTextCurve, getCurveState, isTextObject, toTextSelection } from './curvedText';
 import { createEditorActions, type EditorActions } from './actions';
+import { preloadEditorFonts } from '../fonts/fontLibrary';
 import type { EditorSelection } from '../state/selection';
 
 declare global {
@@ -50,13 +51,13 @@ export function useFabricCanvas(canvasElRef: RefObject<HTMLCanvasElement | null>
 
     function syncSelectionFromCanvas(): void {
       const active = canvas.getActiveObject();
-      setSelection(isTextObject(active) ? { type: 'text', text: active.text } : { type: 'none' });
+      setSelection(isTextObject(active) ? toTextSelection(active) : { type: 'none' });
     }
 
     function handleTextChanged({ target }: { target: IText }): void {
-      applyTextCurve(target, VIROLA_CONFIG.textCurveRadius);
+      applyTextCurve(target, VIROLA_CONFIG.textCurveRadius, getCurveState(target));
       canvas.requestRenderAll();
-      setSelection({ type: 'text', text: target.text });
+      setSelection(toTextSelection(target));
     }
 
     canvas.on('selection:created', syncSelectionFromCanvas);
@@ -65,6 +66,14 @@ export function useFabricCanvas(canvasElRef: RefObject<HTMLCanvasElement | null>
     canvas.on('text:changed', handleTextChanged);
 
     canvas.requestRenderAll();
+
+    // Las tipografías se cargan de verdad en segundo plano (declaradas en
+    // index.html); una vez listas, se vuelve a pintar para que cualquier
+    // texto ya agregado antes de que terminaran de cargar se vea con la
+    // tipografía real y no con el reemplazo del navegador.
+    preloadEditorFonts().then(() => {
+      canvas.requestRenderAll();
+    });
 
     const editorActions = createEditorActions(canvas, VIROLA_CONFIG);
     setActions(editorActions);

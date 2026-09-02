@@ -64,10 +64,11 @@ seleccionado en el canvas: texto, ícono, o nada) y el canvas con la virola.
   `docs/DECISIONS.md`, D4).
 - Control de curvatura (intensidad/radio del arco y dirección).
 - Posición y rotación libres sobre el anillo.
-- "Invertir texto": se incluye como funcionalidad a llevar al MVP, pero **su
-  significado exacto todavía no está validado** (¿invierte el string de texto, o el
-  sentido en que recorre el arco?). Hay que confirmarlo interactuando con la referencia
-  en vivo antes de implementarlo — no asumir un comportamiento.
+- "Invertir texto": cambia la dirección/orientación de la curvatura del texto sobre el
+  arco — pasa de una curvatura tipo "sonrisa" a una tipo "ceño" (y viceversa). El texto
+  permanece siempre derecho y legible; no es un espejado del string ni una simulación
+  con `scaleX(-1)` (eso desalinearía el texto respecto de la curva y dejaría los
+  caracteres al revés).
 
 **Edición de íconos**
 - Biblioteca propia de íconos (curados para el proyecto, no una librería genérica de
