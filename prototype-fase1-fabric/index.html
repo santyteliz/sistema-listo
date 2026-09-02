@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prototipo Fase 1 — Validación Fabric.js (D4)</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+<style>
+  :root { color-scheme: light; }
+  body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    background: #f0efe9;
+    color: #222;
+  }
+  header {
+    padding: 12px 20px;
+    background: #2b2a28;
+    color: #fff;
+  }
+  header h1 { margin: 0; font-size: 16px; }
+  header p { margin: 4px 0 0; font-size: 12px; color: #cfcdc6; }
+  .layout {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .canvas-wrap {
+    background: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .panel {
+    width: 340px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  fieldset {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #fff;
+  }
+  legend { font-weight: 600; font-size: 13px; }
+  fieldset > * { margin-bottom: 8px; }
+  button {
+    cursor: pointer;
+    padding: 6px 10px;
+    border: 1px solid #999;
+    background: #fafafa;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+  button:hover { background: #eee; }
+  label { display: block; font-size: 13px; }
+  input[type="range"] { width: 100%; }
+  textarea {
+    width: 100%;
+    box-sizing: border-box;
+    font-family: monospace;
+    font-size: 11px;
+  }
+  #log {
+    max-height: 220px;
+    overflow-y: auto;
+    background: #111;
+    color: #7CFC7C;
+    font-size: 11px;
+    padding: 8px;
+    border-radius: 4px;
+    white-space: pre-wrap;
+  }
+  .hint { font-size: 12px; color: #555; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Prototipo técnico — Fase 1 (validación de D4: Fabric.js)</h1>
+  <p>Prototipo aislado. No es el editor final. La forma circular es un placeholder de la virola — las medidas reales están pendientes (ver docs/PRODUCTION-SPECS.md).</p>
+</header>
+
+<div class="layout">
+  <div class="canvas-wrap">
+    <canvas id="c" width="600" height="600"></canvas>
+  </div>
+
+  <div class="panel">
+    <fieldset>
+      <legend>1–4. Texto</legend>
+      <button id="btnAddText">Agregar texto</button>
+      <p class="hint">Doble click sobre el texto para editar el contenido. Usá los handles para mover, escalar y rotar.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>5–6. Curvatura (sobre el objeto seleccionado)</legend>
+      <label>Intensidad (radio del arco): <span id="intensityValue">150</span>px
+        <input type="range" id="curveIntensity" min="40" max="400" value="150">
+      </label>
+      <label><input type="checkbox" id="curveDirection"> Invertir dirección</label>
+      <button id="btnRemoveCurve">Quitar curvatura del seleccionado</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>7–10. Serialización / restauración</legend>
+      <button id="btnSerialize">Serializar diseño (guardar)</button>
+      <button id="btnClear">Limpiar canvas</button>
+      <button id="btnRestore">Restaurar desde el JSON de abajo</button>
+      <textarea id="jsonOutput" rows="10" placeholder="Acá aparece el JSON serializado..."></textarea>
+    </fieldset>
+
+    <fieldset>
+      <legend>Diagnóstico</legend>
+      <pre id="log"></pre>
+    </fieldset>
+  </div>
+</div>
+
+<script>
+const canvas = new fabric.Canvas('c', { backgroundColor: '#f7f6f2' });
+
+// Propiedades custom que no son parte del set por defecto de Fabric.js,
+// se agregan explícitamente a toJSON para no depender de que la libreria
+// las incluya sola. curveRadius/curveInverted son solo para el panel de
+// diagnóstico (no afectan el render real, que depende de path/pathStartOffset/pathSide).
+const EXTRA_PROPS = ['path', 'pathStartOffset', 'pathSide', 'pathAlign', 'curveRadius', 'curveInverted'];
+
+function log(msg) {
+  const el = document.getElementById('log');
+  const line = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  el.textContent = line + '\n' + el.textContent;
+}
+
+function drawVirolaPlaceholder() {
+  const ring = new fabric.Circle({
+    left: 100, top: 100, radius: 200,
+    fill: '', stroke: '#999', strokeWidth: 2, strokeDashArray: [6, 4],
+    selectable: false, evented: false, excludeFromExport: true,
+  });
+  canvas.add(ring);
+  canvas.sendToBack(ring);
+}
+drawVirolaPlaceholder();
+
+function buildArcPath(radius, inverted) {
+  const sweep = inverted ? 0 : 1;
+  return `M ${-radius} 0 A ${radius} ${radius} 0 0 ${sweep} ${radius} 0`;
+}
+
+function applyCurve(textObj, radius, inverted) {
+  const path = new fabric.Path(buildArcPath(radius, inverted), { visible: false });
+
+  const textWidth = textObj.width || 100;
+  const arcLength = Math.PI * radius; // el arco siempre es un semicírculo (ver buildArcPath)
+
+  // IMPORTANTE: hay que asignar "path" con .set(), nunca con "textObj.path = path".
+  // La asignación directa no dispara el setter interno de Fabric.js (setPathInfo()),
+  // que calcula path.segmentsInfo. Sin eso, el primer render tira
+  // "Cannot read properties of undefined (reading 'length')" en _measureLine.
+  // (bug encontrado durante este prototipo — ver README.md)
+  textObj.set({
+    path: path,
+    pathSide: 'left',
+    pathAlign: 'baseline',
+    pathStartOffset: Math.max(0, (arcLength - textWidth) / 2),
+    curveRadius: radius,
+    curveInverted: inverted,
+  });
+  textObj.dirty = true;
+  textObj.setCoords();
+  canvas.requestRenderAll();
+}
+
+function getSelectedText() {
+  const obj = canvas.getActiveObject();
+  return obj && obj.type === 'i-text' ? obj : null;
+}
+
+let counter = 0;
+document.getElementById('btnAddText').addEventListener('click', () => {
+  counter++;
+  const text = new fabric.IText(`Texto ${counter}`, {
+    left: 300, top: 300, originX: 'center', originY: 'center',
+    fontSize: 32, fontFamily: 'Georgia, serif', fill: '#222',
+  });
+  canvas.add(text);
+  canvas.setActiveObject(text);
+  applyCurve(
+    text,
+    Number(document.getElementById('curveIntensity').value),
+    document.getElementById('curveDirection').checked
+  );
+  log(`Texto ${counter} agregado con curvatura inicial.`);
+});
+
+// Si se edita el texto (cambia el ancho), recalculamos el centrado sobre el arco.
+canvas.on('text:changed', (e) => {
+  const obj = e.target;
+  if (obj && obj.path) {
+    applyCurve(obj, obj.curveRadius, obj.curveInverted);
+  }
+});
+
+document.getElementById('curveIntensity').addEventListener('input', (e) => {
+  document.getElementById('intensityValue').textContent = e.target.value;
+  const obj = getSelectedText();
+  if (!obj) return;
+  applyCurve(obj, Number(e.target.value), document.getElementById('curveDirection').checked);
+  log(`Curvatura actualizada: radio=${e.target.value}`);
+});
+
+document.getElementById('curveDirection').addEventListener('change', (e) => {
+  const obj = getSelectedText();
+  if (!obj) return;
+  applyCurve(obj, Number(document.getElementById('curveIntensity').value), e.target.checked);
+  log(`Dirección de curvatura invertida: ${e.target.checked}`);
+});
+
+document.getElementById('btnRemoveCurve').addEventListener('click', () => {
+  const obj = getSelectedText();
+  if (!obj) { log('No hay texto seleccionado.'); return; }
+  // Importante: también hay que limpiar curveRadius/curveInverted, no solo
+  // "path" — si no, quedan como número en el objeto, se serializan igual, y
+  // al restaurar el diseño la curvatura se reaplica sola aunque el usuario
+  // la haya sacado antes de guardar.
+  obj.set({ path: null, curveRadius: null, curveInverted: null });
+  obj.dirty = true;
+  canvas.requestRenderAll();
+  log('Curvatura removida del objeto seleccionado.');
+});
+
+document.getElementById('btnSerialize').addEventListener('click', () => {
+  const json = canvas.toJSON(EXTRA_PROPS);
+  document.getElementById('jsonOutput').value = JSON.stringify(json, null, 2);
+  const texts = (json.objects || []).filter(o => o.type === 'i-text');
+  log(`Diseño serializado: ${json.objects.length} objeto(s), ${texts.length} texto(s).`);
+  texts.forEach((t, i) => {
+    log(`  Texto ${i + 1}: "${t.text}" — path=${t.path ? 'sí' : 'no'}, curveRadius=${t.curveRadius}, invertido=${t.curveInverted}`);
+  });
+});
+
+document.getElementById('btnClear').addEventListener('click', () => {
+  canvas.clear();
+  canvas.backgroundColor = '#f7f6f2';
+  drawVirolaPlaceholder();
+  canvas.requestRenderAll();
+  log('Canvas limpiado. Queda solo la virola placeholder.');
+});
+
+document.getElementById('btnRestore').addEventListener('click', () => {
+  const raw = document.getElementById('jsonOutput').value.trim();
+  if (!raw) { log('No hay JSON para restaurar (serializá primero).'); return; }
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (err) {
+    log(`ERROR: el JSON no es válido (${err.message}).`);
+    return;
+  }
+  // BUGS DE FABRIC.JS 5.3.1 encontrados con este prototipo (ver README.md):
+  //
+  // 1) canvas.loadFromJSON reconstruye "path" como un objeto plano, no como una
+  //    instancia real de fabric.Path (le faltan métodos como isNotVisible), y
+  //    ese error avanza sin cortarse hasta tirar una excepción SÍNCRONA dentro
+  //    de la propia llamada a loadFromJSON (nunca llega a invocar su callback).
+  //    Los objetos SÍ quedan agregados al canvas antes de que explote.
+  //
+  // 2) Esa excepción interrumpe un render a mitad de camino (entre un ctx.save()
+  //    y su ctx.restore()), dejando la matriz de transformación del canvas 2D
+  //    corrompida — el diseño restaurado aparece desplazado/con zoom incorrecto
+  //    aunque los datos estén bien. canvas.setDimensions() con el mismo ancho/
+  //    alto fuerza a Fabric a reinicializar el contexto limpio.
+  //
+  // 3) Reconstruir el Path a mano desde el array de segmentos ya parseado
+  //    (t.path.path) no alcanza: el texto deja de tirar error pero el
+  //    posicionado de cada carácter sobre el arco queda mal (se ve derecho).
+  //    La forma confiable es regenerar la curva con la MISMA función que se usa
+  //    en el resto del prototipo (applyCurve), a partir de curveRadius /
+  //    curveInverted — que sí viajaron bien en el JSON — en vez de confiar en
+  //    la reconstrucción nativa del Path.
+  try {
+    canvas.loadFromJSON(parsed, () => {});
+  } catch (err) {
+    log(`(Fabric.js tiró una excepción interna al restaurar — bug conocido de la v5.3.1 con texto curvo, se corrige a continuación: ${err.message})`);
+  }
+  canvas.setDimensions({ width: canvas.width, height: canvas.height });
+
+  drawVirolaPlaceholder();
+  const texts = canvas.getObjects().filter(o => o.type === 'i-text');
+  texts.forEach((t) => {
+    if (typeof t.curveRadius === 'number') {
+      applyCurve(t, t.curveRadius, t.curveInverted);
+    }
+    t.setCoords();
+  });
+  canvas.requestRenderAll();
+
+  log(`Diseño restaurado: ${canvas.getObjects().length} objeto(s) en total, ${texts.length} texto(s).`);
+  texts.forEach((t, i) => {
+    const hasPath = !!t.path;
+    const isRealPath = hasPath && t.path instanceof fabric.Path;
+    log(
+      `  Texto ${i + 1}: "${t.text}" — curvatura restaurada: ${hasPath ? 'SÍ' : 'NO'}` +
+      (hasPath
+        ? ` (radio=${t.curveRadius}, invertido=${t.curveInverted}, pathStartOffset=${t.pathStartOffset?.toFixed(1)}, pathSide=${t.pathSide}, Path reconstruido correctamente=${isRealPath ? 'sí' : 'NO'})`
+        : '')
+    );
+  });
+});
+
+log('Prototipo listo. Fabric.js version: ' + fabric.version);
+</script>
+</body>
+</html>

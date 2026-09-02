@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prueba acotada — Fabric.js v6 (texto curvo)</title>
+<style>
+  :root { color-scheme: light; }
+  body { margin: 0; font-family: system-ui, sans-serif; background: #f0efe9; color: #222; }
+  header { padding: 12px 20px; background: #2b2a28; color: #fff; }
+  header h1 { margin: 0; font-size: 16px; }
+  header p { margin: 4px 0 0; font-size: 12px; color: #cfcdc6; }
+  .layout { display: flex; gap: 20px; padding: 20px; align-items: flex-start; flex-wrap: wrap; }
+  .canvas-wrap { background: #fff; border: 1px solid #ccc; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .panel { width: 340px; display: flex; flex-direction: column; gap: 12px; }
+  fieldset { border: 1px solid #ccc; border-radius: 4px; background: #fff; }
+  legend { font-weight: 600; font-size: 13px; }
+  fieldset > * { margin-bottom: 8px; }
+  button { cursor: pointer; padding: 6px 10px; border: 1px solid #999; background: #fafafa; border-radius: 4px; font-size: 13px; }
+  button:hover { background: #eee; }
+  label { display: block; font-size: 13px; }
+  input[type="range"] { width: 100%; }
+  textarea { width: 100%; box-sizing: border-box; font-family: monospace; font-size: 11px; }
+  #log { max-height: 260px; overflow-y: auto; background: #111; color: #7CFC7C; font-size: 11px; padding: 8px; border-radius: 4px; white-space: pre-wrap; }
+  .hint { font-size: 12px; color: #555; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Prueba acotada — ¿Fabric.js v6 arregla el texto curvo?</h1>
+  <p>Prueba aislada, independiente de prototype-fase1-fabric/ (Fabric.js 5.3.1). No es el editor. Único objetivo: comparar el comportamiento de loadFromJSON con texto sobre un path.</p>
+</header>
+
+<div class="layout">
+  <div class="canvas-wrap">
+    <canvas id="c" width="600" height="600"></canvas>
+  </div>
+
+  <div class="panel">
+    <fieldset>
+      <legend>Texto</legend>
+      <button id="btnAddText">1. Agregar texto curvo</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>Curvatura / transformación</legend>
+      <label>Intensidad (radio): <span id="intensityValue">150</span>px
+        <input type="range" id="curveIntensity" min="40" max="400" value="150">
+      </label>
+      <label><input type="checkbox" id="curveDirection"> Invertir dirección</label>
+      <button id="btnTransform">3. Mover/rotar/escalar (vía API)</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>Serialización / restauración</legend>
+      <button id="btnSerialize">4. Serializar diseño</button>
+      <button id="btnClear">5. Limpiar canvas</button>
+      <button id="btnRestore">6. Restaurar desde el JSON de abajo</button>
+      <textarea id="jsonOutput" rows="8" placeholder="Acá aparece el JSON serializado..."></textarea>
+    </fieldset>
+
+    <fieldset>
+      <legend>Diagnóstico</legend>
+      <pre id="log"></pre>
+    </fieldset>
+  </div>
+</div>
+
+<script type="module">
+// Versión EXACTA probada: fabric@6.0.2 (paquete npm "fabric"), servido por jsdelivr.
+// Fabric.js v6 es ESM-only: no publica un bundle UMD con variable global "fabric"
+// para <script src="...">, a diferencia de v5. Por eso acá se usa <script type="module">
+// + import, en vez de una etiqueta <script> clásica. Esto ya es, en sí mismo, un dato
+// relevante para comparar contra v5 (más simple de cargar sin build).
+import * as fabricNS from 'https://cdn.jsdelivr.net/npm/fabric@6.0.2/dist/index.min.mjs';
+const { Canvas, IText, Path, Circle, version } = fabricNS;
+
+const canvas = new Canvas('c', { backgroundColor: '#f7f6f2' });
+
+function log(msg) {
+  const el = document.getElementById('log');
+  const line = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  el.textContent = line + '\n' + el.textContent;
+}
+
+function drawVirolaPlaceholder() {
+  const ring = new Circle({
+    left: 100, top: 100, radius: 200,
+    fill: '', stroke: '#999', strokeWidth: 2, strokeDashArray: [6, 4],
+    selectable: false, evented: false, excludeFromExport: true,
+  });
+  canvas.add(ring);
+  canvas.sendObjectToBack(ring);
+}
+drawVirolaPlaceholder();
+
+function buildArcPath(radius, inverted) {
+  const sweep = inverted ? 0 : 1;
+  return `M ${-radius} 0 A ${radius} ${radius} 0 0 ${sweep} ${radius} 0`;
+}
+
+// Misma estrategia que en el prototipo v5: .set() en vez de asignación directa,
+// para ver si v6 todavía necesita ese cuidado o si lo resuelve solo.
+function applyCurve(textObj, radius, inverted) {
+  const path = new Path(buildArcPath(radius, inverted), { visible: false });
+  const textWidth = textObj.width || 100;
+  const arcLength = Math.PI * radius;
+  textObj.set({
+    path,
+    pathSide: 'left',
+    pathAlign: 'baseline',
+    pathStartOffset: Math.max(0, (arcLength - textWidth) / 2),
+    curveRadius: radius,
+    curveInverted: inverted,
+  });
+  textObj.setCoords();
+  canvas.requestRenderAll();
+}
+
+let textRef = null;
+
+document.getElementById('btnAddText').addEventListener('click', () => {
+  const text = new IText('Mate Web', {
+    left: 300, top: 300, originX: 'center', originY: 'center',
+    fontSize: 32, fontFamily: 'Georgia, serif', fill: '#222',
+  });
+  canvas.add(text);
+  canvas.setActiveObject(text);
+  textRef = text;
+  applyCurve(
+    text,
+    Number(document.getElementById('curveIntensity').value),
+    document.getElementById('curveDirection').checked
+  );
+  log('2. Texto agregado y curvado.');
+});
+
+document.getElementById('curveIntensity').addEventListener('input', (e) => {
+  document.getElementById('intensityValue').textContent = e.target.value;
+  if (!textRef) return;
+  applyCurve(textRef, Number(e.target.value), document.getElementById('curveDirection').checked);
+  log(`Curvatura actualizada: radio=${e.target.value}`);
+});
+
+document.getElementById('curveDirection').addEventListener('change', (e) => {
+  if (!textRef) return;
+  applyCurve(textRef, Number(document.getElementById('curveIntensity').value), e.target.checked);
+  log(`Dirección invertida: ${e.target.checked}`);
+});
+
+document.getElementById('btnTransform').addEventListener('click', () => {
+  if (!textRef) { log('Agregá el texto primero.'); return; }
+  textRef.set({ left: 320, top: 280, angle: 15, scaleX: 1.2, scaleY: 1.2 });
+  textRef.setCoords();
+  canvas.requestRenderAll();
+  log('3. Texto movido, rotado y escalado.');
+});
+
+document.getElementById('btnSerialize').addEventListener('click', () => {
+  const json = canvas.toJSON(['path', 'pathStartOffset', 'pathSide', 'pathAlign', 'curveRadius', 'curveInverted']);
+  document.getElementById('jsonOutput').value = JSON.stringify(json, null, 2);
+  const texts = (json.objects || []).filter(o => o.type === 'i-text' || o.type === 'IText');
+  log(`4. Diseño serializado: ${json.objects.length} objeto(s), ${texts.length} texto(s).`);
+  texts.forEach((t, i) => {
+    log(`  Texto ${i + 1}: "${t.text}" — path=${t.path ? 'sí' : 'no'}, curveRadius=${t.curveRadius}`);
+  });
+});
+
+document.getElementById('btnClear').addEventListener('click', () => {
+  canvas.clear();
+  canvas.backgroundColor = '#f7f6f2';
+  drawVirolaPlaceholder();
+  canvas.requestRenderAll();
+  log('5. Canvas limpiado.');
+});
+
+document.getElementById('btnRestore').addEventListener('click', async () => {
+  const raw = document.getElementById('jsonOutput').value.trim();
+  if (!raw) { log('No hay JSON para restaurar (serializá primero).'); return; }
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (err) {
+    log(`ERROR: el JSON no es válido (${err.message}).`);
+    return;
+  }
+
+  // En v6, loadFromJSON es async y devuelve una Promise (a diferencia del callback
+  // de v5). Probamos el patrón "nativo" de v6 tal cual, SIN ningún workaround de
+  // los que hicieron falta en 5.3.1 (sin try/catch defensivo, sin reconstrucción
+  // manual de Path, sin canvas.setDimensions de más). Si algo de esto hace falta
+  // igual, se va a ver en los errores de consola / en el diagnóstico de abajo.
+  let threw = null;
+  try {
+    await canvas.loadFromJSON(parsed);
+    canvas.requestRenderAll();
+  } catch (err) {
+    threw = err.message;
+  }
+
+  drawVirolaPlaceholder();
+  canvas.requestRenderAll();
+
+  const texts = canvas.getObjects().filter(o => o.type === 'i-text' || o.type === 'IText');
+  textRef = texts[0] || null;
+
+  log(`6. Restaurar terminó. ¿tiró excepción?: ${threw ? 'SÍ — ' + threw : 'no'}`);
+  log(`   Objetos totales: ${canvas.getObjects().length}, textos: ${texts.length}`);
+  texts.forEach((t, i) => {
+    const hasPath = !!t.path;
+    const isRealPath = hasPath && t.path instanceof Path;
+    log(
+      `   Texto ${i + 1}: "${t.text}" — path=${hasPath ? 'sí' : 'no'}, instancia real de Path=${isRealPath ? 'sí' : 'NO'}, ` +
+      `radio=${t.curveRadius}, pathStartOffset=${t.pathStartOffset?.toFixed ? t.pathStartOffset.toFixed(1) : t.pathStartOffset}, left=${t.left}, angle=${t.angle}`
+    );
+  });
+});
+
+log('Prueba lista. Fabric.js version (reportada por la librería): ' + version);
+</script>
+</body>
+</html>
