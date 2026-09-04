@@ -1,0 +1,15 @@
+# Forzar tratamiento binario explícito para archivos que Git podría
+# clasificar mal como texto (y corromper con conversión de saltos de línea
+# CRLF/LF) — encontrado con recursos-marca/LOGOSTHEMATESHOP 2.ai, que es
+# PDF-compatible y arranca con contenido ASCII, engañando la heurística de
+# detección automática de Git.
+*.ai binary
+*.pdf binary
+*.otf binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.zip binary

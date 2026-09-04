@@ -51,21 +51,18 @@ export function angleToPoint(
 }
 
 /**
- * Radio sobre el que se ubican los íconos. Usa el borde exterior del área
- * de grabado (`engravingArea.maxRadius`), no `textCurveRadius`: si
- * compartieran el mismo radio, un ícono en la posición inicial por defecto
- * (90°) cae exactamente sobre el borde del cuadro delimitador del texto
- * curvo (el cuadro invisible de un texto sobre un arco es mucho más grande
- * que las letras que se ven), y un click ahí puede terminar seleccionando
- * el texto en lugar del ícono. Separar los radios evita esa coincidencia.
+ * Aplica una posición angular sobre el anillo de la virola a un ícono
+ * existente. Usa `config.iconPlacementRadius`, no `config.textCurveRadius`:
+ * si compartieran el mismo radio, un ícono en la posición inicial por
+ * defecto (90°) cae exactamente sobre el borde del cuadro delimitador del
+ * texto curvo (el cuadro invisible de un texto sobre un arco es mucho más
+ * grande que las letras que se ven), y un click ahí puede terminar
+ * seleccionando el texto en lugar del ícono. Separar los radios (ambos
+ * derivados de la banda física real de la virola, ver virola.config.ts)
+ * evita esa coincidencia.
  */
-function getIconRadius(config: VirolaConfig): number {
-  return config.engravingArea.maxRadius;
-}
-
-/** Aplica una posición angular sobre el anillo de la virola a un ícono existente. */
 export function applyIconAngle(icon: Path, angleDeg: number, config: VirolaConfig): void {
-  const { x, y } = angleToPoint(angleDeg, getIconRadius(config), config.width / 2, config.height / 2);
+  const { x, y } = angleToPoint(angleDeg, config.iconPlacementRadius, config.width / 2, config.height / 2);
   icon.set({ left: x, top: y, angleDeg });
   icon.setCoords();
 }

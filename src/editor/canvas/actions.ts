@@ -11,6 +11,7 @@ import {
   isIconObject,
   ICON_CUSTOM_PROPERTIES,
 } from './iconElement';
+import { hasReachedDesignLimit } from './designLimits';
 
 /** Propiedades propias (no nativas de Fabric) que hay que pedirle a toObject() que incluya. */
 const CUSTOM_PROPERTIES = [...CURVE_CUSTOM_PROPERTIES, ...ICON_CUSTOM_PROPERTIES];
@@ -23,7 +24,10 @@ const CUSTOM_PROPERTIES = [...CURVE_CUSTOM_PROPERTIES, ...ICON_CUSTOM_PROPERTIES
 export interface EditorActions {
   /** Referencia de escape hacia la instancia real de Fabric, solo para debugging. */
   getCanvas: () => Canvas;
-  /** Agrega un nuevo texto curvo, centrado sobre la virola, y lo selecciona. */
+  /**
+   * Agrega un nuevo texto curvo, centrado sobre la virola, y lo selecciona.
+   * No hace nada si ya se llegó a `MAX_DESIGN_ELEMENTS` (ver designLimits.ts).
+   */
   addCurvedText: () => void;
   /** Actualiza el contenido del texto actualmente seleccionado (si hay uno). */
   updateSelectedTextContent: (text: string) => void;
@@ -35,7 +39,11 @@ export interface EditorActions {
   setSelectedTextInverted: (inverted: boolean) => void;
   /** Corre el texto seleccionado a lo largo del arco (pathStartOffset). */
   setSelectedTextCurveOffset: (offset: number) => void;
-  /** Agrega un ícono de la biblioteca (por su id), ubicado sobre el anillo, y lo selecciona. */
+  /**
+   * Agrega un ícono de la biblioteca (por su id), ubicado sobre el anillo,
+   * y lo selecciona. No hace nada si ya se llegó a `MAX_DESIGN_ELEMENTS`
+   * (ver designLimits.ts).
+   */
   addIcon: (iconId: string) => void;
   /** Reemplaza la figura del ícono seleccionado por otra de la biblioteca, sin mover/rotar/escalar. */
   replaceSelectedIcon: (iconId: string) => void;
@@ -85,6 +93,13 @@ export function createEditorActions(canvas: Canvas, config: VirolaConfig): Edito
   }
 
   function addCurvedText(): void {
+    // Protección en la capa de dominio, no solo en la UI: aunque el botón
+    // ya se deshabilita al llegar al máximo (ver Sidebar.tsx), esta función
+    // no debe crear un elemento de más aunque alguien la llame de otra
+    // forma.
+    if (hasReachedDesignLimit(canvas)) {
+      return;
+    }
     const text = createCurvedText(config);
     canvas.add(text);
     canvas.setActiveObject(text);
@@ -141,6 +156,10 @@ export function createEditorActions(canvas: Canvas, config: VirolaConfig): Edito
   }
 
   function addIcon(iconId: string): void {
+    // Misma protección que addCurvedText — ver comentario ahí.
+    if (hasReachedDesignLimit(canvas)) {
+      return;
+    }
     const iconDef = getIconDefinition(iconId);
     if (!iconDef) {
       return;
@@ -154,6 +173,10 @@ export function createEditorActions(canvas: Canvas, config: VirolaConfig): Edito
   }
 
   function replaceSelectedIcon(iconId: string): void {
+    // A propósito, esta función NO pasa por hasReachedDesignLimit: cambia
+    // la figura de un ícono que ya existe (lo saca y pone uno en su lugar),
+    // el total de elementos del diseño no cambia — no debe consumir un
+    // cupo nuevo.
     const current = getSelectedIcon();
     if (!current) {
       return;

@@ -4,6 +4,7 @@ import { VIROLA_CONFIG } from '../../config/virola.config';
 import { renderGuides } from './guides';
 import { applyTextCurve, getCurveState, isTextObject, toTextSelection } from './curvedText';
 import { isIconObject, toIconSelection } from './iconElement';
+import { countDesignElements } from './designLimits';
 import { createEditorActions, type EditorActions } from './actions';
 import { preloadEditorFonts } from '../fonts/fontLibrary';
 import type { EditorSelection } from '../state/selection';
@@ -41,6 +42,7 @@ export function useFabricCanvas(
   const canvasRef = useRef<Canvas | null>(null);
   const [actions, setActions] = useState<EditorActions | null>(null);
   const [selection, setSelection] = useState<EditorSelection>({ type: 'none' });
+  const [elementCount, setElementCount] = useState(0);
   const onIconDoubleClickRef = useRef(options.onIconDoubleClick);
   onIconDoubleClickRef.current = options.onIconDoubleClick;
 
@@ -99,12 +101,24 @@ export function useFabricCanvas(
       }
     }
 
+    // Se recalcula desde cero (no se suma/resta a mano) cada vez que se
+    // agrega o saca un objeto del canvas — así no importa si el cambio
+    // viene de agregar texto/ícono, eliminar, reemplazar un ícono (que
+    // saca uno y agrega otro) o restaurar un diseño completo: siempre
+    // termina reflejando la cantidad real de elementos, sin poder
+    // desincronizarse.
+    function syncElementCount(): void {
+      setElementCount(countDesignElements(canvas));
+    }
+
     canvas.on('selection:created', syncSelectionFromCanvas);
     canvas.on('selection:updated', syncSelectionFromCanvas);
     canvas.on('selection:cleared', () => setSelection({ type: 'none' }));
     canvas.on('text:changed', handleTextChanged);
     canvas.on('object:modified', handleObjectModified);
     canvas.on('mouse:dblclick', handleDoubleClick);
+    canvas.on('object:added', syncElementCount);
+    canvas.on('object:removed', syncElementCount);
 
     canvas.requestRenderAll();
 
@@ -128,11 +142,12 @@ export function useFabricCanvas(
       canvasRef.current = null;
       setActions(null);
       setSelection({ type: 'none' });
+      setElementCount(0);
       if (import.meta.env.DEV) {
         delete window.__editorActions;
       }
     };
   }, [canvasElRef]);
 
-  return { actions, selection };
+  return { actions, selection, elementCount };
 }

@@ -1,0 +1,18 @@
+.element-counter {
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: #666;
+}
+
+.element-counter__label {
+  font-weight: 600;
+}
+
+.element-counter--full .element-counter__label {
+  color: #a83a3a;
+}
+
+.element-counter__message {
+  margin: 4px 0 0;
+  color: #a83a3a;
+}

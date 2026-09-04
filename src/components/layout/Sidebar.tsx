@@ -1,6 +1,8 @@
 import { useEditor } from '../../editor/state/EditorContext';
 import { TextEditorPanel } from '../../editor/panels/TextEditorPanel';
 import { IconEditorPanel } from '../../editor/panels/IconEditorPanel';
+import { ElementCounter } from '../../editor/panels/ElementCounter';
+import { MAX_DESIGN_ELEMENTS } from '../../editor/canvas/designLimits';
 import './Sidebar.css';
 
 /**
@@ -9,15 +11,18 @@ import './Sidebar.css';
  * correspondiente (texto, ícono, o estado vacío).
  */
 export function Sidebar() {
-  const { actions, selection, openIconPickerToAdd } = useEditor();
+  const { actions, selection, elementCount, openIconPickerToAdd } = useEditor();
+  const isAtLimit = elementCount >= MAX_DESIGN_ELEMENTS;
 
   return (
     <aside className="sidebar">
+      <ElementCounter count={elementCount} />
+
       <div className="sidebar__add-buttons">
         <button
           type="button"
           className="sidebar__add-text"
-          disabled={!actions}
+          disabled={!actions || isAtLimit}
           onClick={() => actions?.addCurvedText()}
         >
           Agregar texto
@@ -25,7 +30,7 @@ export function Sidebar() {
         <button
           type="button"
           className="sidebar__add-text"
-          disabled={!actions}
+          disabled={!actions || isAtLimit}
           onClick={openIconPickerToAdd}
         >
           Agregar ícono
