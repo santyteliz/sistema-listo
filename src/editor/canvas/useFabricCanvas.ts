@@ -84,7 +84,7 @@ export function useFabricCanvas(
     }
 
     function handleTextChanged({ target }: { target: IText }): void {
-      applyTextCurve(target, VIROLA_CONFIG.textCurveRadius, getCurveState(target));
+      applyTextCurve(target, VIROLA_CONFIG, getCurveState(target));
       canvas.requestRenderAll();
       setSelection(toTextSelection(target));
     }

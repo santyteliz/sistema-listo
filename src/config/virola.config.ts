@@ -46,6 +46,17 @@ export interface VirolaConfig {
   textCurveRadius: number;
   /** Radio por defecto donde se ubican los íconos (derivado; distinto del de texto a propósito, ver iconElement.ts). */
   iconPlacementRadius: number;
+  /**
+   * Cuánto lugar radial hay, desde `textCurveRadius`, hasta cualquiera de
+   * los dos bordes de la banda física (derivado: la mitad de `bandWidth`,
+   * porque `textCurveRadius` está exactamente a mitad de camino). El texto
+   * curvo se apoya con la base sobre `textCurveRadius` y el cuerpo de las
+   * letras "crece" en sentido radial desde ahí — sin este límite, una
+   * tipografía grande puede pasar por encima del ancho de arco disponible
+   * y aun así sobresalir del anillo hacia adentro o hacia afuera (ver
+   * curvedText.ts, `GLYPH_HEIGHT_RATIO`).
+   */
+  maxTextGlyphHeight: number;
 }
 
 function buildVirolaConfig(params: {
@@ -76,6 +87,7 @@ function buildVirolaConfig(params: {
     // delimitador del texto curvo puede tapar el punto donde arranca un
     // ícono — ver docs/DECISIONS.md / historial de iconElement.ts).
     iconPlacementRadius: innerRadius + bandWidth * 0.85,
+    maxTextGlyphHeight: bandWidth / 2,
   };
 }
 

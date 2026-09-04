@@ -29,7 +29,7 @@ const ANGLE_STEP_DEG = 60;
 /**
  * Nombres de las propiedades propias (no nativas de Fabric) que un ícono
  * guarda sobre sí mismo. Igual que con el texto curvo (ver curvedText.ts,
- * `CURVE_CUSTOM_PROPERTIES`), `canvas.toJSON()` no las incluye solo —
+ * `TEXT_CUSTOM_PROPERTIES`), `canvas.toJSON()` no las incluye solo —
  * `actions.ts` las suma vía `canvas.toObject([...])` al serializar.
  * (`flipX`/`flipY` no están acá porque son propiedades nativas de Fabric:
  * se serializan solas.)

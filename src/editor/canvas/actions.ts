@@ -1,6 +1,6 @@
 import type { Canvas, FabricObject, IText } from 'fabric';
 import type { VirolaConfig } from '../../config/virola.config';
-import { createCurvedText, isTextObject, CURVE_CUSTOM_PROPERTIES } from './curvedText';
+import { createCurvedText, isTextObject, TEXT_CUSTOM_PROPERTIES } from './curvedText';
 import { renderGuides } from './guides';
 import {
   applyIconAngle,
@@ -14,7 +14,7 @@ import {
 import { canAddDesignElement } from './designLimits';
 
 /** Propiedades propias (no nativas de Fabric) que hay que pedirle a toObject() que incluya. */
-const CUSTOM_PROPERTIES = [...CURVE_CUSTOM_PROPERTIES, ...ICON_CUSTOM_PROPERTIES];
+const CUSTOM_PROPERTIES = [...TEXT_CUSTOM_PROPERTIES, ...ICON_CUSTOM_PROPERTIES];
 
 /**
  * Capa de comandos entre la UI y Fabric.js. Los componentes de React nunca
@@ -33,7 +33,10 @@ export interface EditorActions {
   updateSelectedTextContent: (text: string) => void;
   /** Cambia la tipografía del texto seleccionado (espera a que cargue de verdad). */
   setSelectedTextFontFamily: (fontFamily: string) => Promise<void>;
-  /** Cambia el tamaño del texto seleccionado. */
+  /**
+   * Pide un nuevo tamaño para el texto seleccionado. El tamaño final puede
+   * quedar más chico si no entra en el arco (ver auto-fit en curvedText.ts).
+   */
   setSelectedTextFontSize: (fontSize: number) => void;
   /** Invierte (o no) el sentido de la curva del texto seleccionado. */
   setSelectedTextInverted: (inverted: boolean) => void;
@@ -134,7 +137,12 @@ export function createEditorActions(canvas: Canvas, config: VirolaConfig): Edito
     if (!text) {
       return;
     }
-    text.set('fontSize', fontSize);
+    // No se aplica el tamaño directamente: se guarda como "lo que el
+    // usuario pidió" y se dispara el recálculo central (applyTextCurve,
+    // vía text:changed), que hace el auto-fit real contra el ancho medido
+    // del texto y deja `fontSize` en lo más grande que entra sin pasarse
+    // de este pedido.
+    text.set('desiredFontSize', fontSize);
     notifyTextChanged(text);
   }
 
