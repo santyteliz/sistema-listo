@@ -33,7 +33,12 @@ export function IconPickerModal() {
       <div className="icon-picker" onClick={(event) => event.stopPropagation()}>
         <div className="icon-picker__header">
           <h2>{iconPickerMode === 'replace' ? 'Cambiar ícono' : 'Agregar ícono'}</h2>
-          <button type="button" className="icon-picker__close" onClick={closeIconPicker}>
+          <button
+            type="button"
+            className="icon-picker__close"
+            onClick={closeIconPicker}
+            aria-label="Cerrar"
+          >
             ✕
           </button>
         </div>

@@ -1,35 +1,38 @@
 .icon-picker-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(20, 19, 17, 0.45);
+  background: rgba(22, 15, 13, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
+  padding: 16px;
 }
 
 .icon-picker {
-  width: 360px;
+  width: 380px;
+  max-width: 100%;
   max-height: 80vh;
   overflow-y: auto;
-  background: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-  padding: 16px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: 18px;
 }
 
 .icon-picker__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .icon-picker__header h2 {
   margin: 0;
-  font-size: 15px;
-  font-weight: 600;
-  color: #222;
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--text-primary);
 }
 
 .icon-picker__close {
@@ -38,12 +41,14 @@
   font-size: 16px;
   line-height: 1;
   cursor: pointer;
-  color: #666;
-  padding: 4px;
+  color: var(--text-secondary);
+  padding: 6px;
+  border-radius: var(--radius-sm);
 }
 
 .icon-picker__close:hover {
-  color: #222;
+  color: var(--text-primary);
+  background: var(--surface-muted);
 }
 
 .icon-picker__grid {
@@ -57,17 +62,17 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  padding: 12px 8px;
-  border: 1px solid #e0ded8;
-  border-radius: 6px;
-  background: #fafaf8;
+  padding: 14px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
   cursor: pointer;
-  color: #222;
+  color: var(--text-primary);
 }
 
 .icon-picker__item:hover {
-  background: #f0efe9;
-  border-color: #c9c6bd;
+  background: var(--brand-offwhite);
+  border-color: var(--brand-olive);
 }
 
 .icon-picker__item svg {
@@ -77,6 +82,12 @@
 
 .icon-picker__item span {
   font-size: 12px;
-  color: #555;
+  color: var(--text-secondary);
   text-align: center;
+}
+
+@media (max-width: 480px) {
+  .icon-picker__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }

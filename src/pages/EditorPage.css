@@ -9,3 +9,18 @@
   flex: 1;
   min-height: 0;
 }
+
+/*
+ * Tablet/mobile: la sidebar pasa de columna fija al costado a una franja
+ * debajo del canvas (el canvas es lo primero que se ve — sigue siendo el
+ * elemento principal de la pantalla, sección 10). Todo el body pasa a
+ * scrollear verticalmente en vez de forzar que ambos paneles quepan en la
+ * misma pantalla, evitando el scroll horizontal accidental (sección 12): el
+ * ancho de cada hijo queda limitado al 100% del viewport en sus propios CSS.
+ */
+@media (max-width: 900px) {
+  .editor-page__body {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+}

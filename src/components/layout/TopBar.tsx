@@ -1,3 +1,4 @@
+import { BRAND_LOGO } from '../../config/brand';
 import './TopBar.css';
 
 /**
@@ -7,6 +8,7 @@ import './TopBar.css';
 export function TopBar() {
   return (
     <header className="top-bar">
+      <img className="top-bar__logo" src={BRAND_LOGO.logotipo} alt="Mate Shop" />
       <span className="top-bar__title">Personalizador de mates</span>
     </header>
   );

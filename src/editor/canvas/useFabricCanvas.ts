@@ -55,7 +55,7 @@ export function useFabricCanvas(
     const canvas = new Canvas(canvasEl, {
       width: VIROLA_CONFIG.width,
       height: VIROLA_CONFIG.height,
-      backgroundColor: '#f7f6f2',
+      backgroundColor: '#ffffff',
       selection: true,
       // NO usar perPixelTargetFind acá: probado y descartado. Con íconos de
       // solo trazo (sin relleno, a propósito — ver iconLibrary.ts) el
@@ -137,7 +137,58 @@ export function useFabricCanvas(
       window.__editorActions = editorActions;
     }
 
+    // Responsive: en pantallas angostas (celular/tablet), el <canvas> nativo
+    // (siempre VIROLA_CONFIG.width/height de resolución, ~640px, para que el
+    // grabado se vea nítido) no puede ocupar más ancho que el que le deja su
+    // contenedor sin generar scroll horizontal (sección 12/16 de la Etapa 4:
+    // requisito de UI, no un cambio de geometría de la virola — los 640px de
+    // *resolución* interna no cambian, solo el tamaño en pantalla).
+    //
+    // Se logra con `setDimensions` (tamaño real en pantalla) + `setZoom`
+    // (mismo factor), en vez de solo CSS: `setZoom` reescala el
+    // `viewportTransform`, que es lo que Fabric.js usa tanto para dibujar
+    // como para traducir clicks/touches a coordenadas de escena (ver
+    // `getPointer`) — así los objetos siguen siendo seleccionables,
+    // arrastrables, etc. con precisión en cualquier tamaño de pantalla. Un
+    // simple `max-width` por CSS únicamente escala la imagen, no los
+    // eventos de puntero, y desalinearía el drag/resize de Fabric.js.
+    const container = canvasEl.parentElement;
+
+    function getAvailableWidth(el: HTMLElement): number {
+      const style = window.getComputedStyle(el);
+      const paddingX = parseFloat(style.paddingLeft || '0') + parseFloat(style.paddingRight || '0');
+      return Math.max(0, el.clientWidth - paddingX);
+    }
+
+    function applyResponsiveScale(): void {
+      if (!container) {
+        return;
+      }
+      const availableWidth = getAvailableWidth(container);
+      if (!availableWidth) {
+        return;
+      }
+      // Nunca se agranda más allá de la resolución nativa (escalar > 1
+      // desenfocaría el trazo, sin ninguna ganancia real de espacio útil).
+      const scale = Math.min(1, availableWidth / VIROLA_CONFIG.width);
+      canvas.setDimensions({
+        width: VIROLA_CONFIG.width * scale,
+        height: VIROLA_CONFIG.height * scale,
+      });
+      canvas.setZoom(scale);
+      canvas.requestRenderAll();
+    }
+
+    applyResponsiveScale();
+
+    let resizeObserver: ResizeObserver | undefined;
+    if (container && typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(applyResponsiveScale);
+      resizeObserver.observe(container);
+    }
+
     return () => {
+      resizeObserver?.disconnect();
       canvas.dispose();
       canvasRef.current = null;
       setActions(null);

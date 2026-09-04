@@ -1,3 +1,46 @@
+/**
+ * Tokens visuales globales de la interfaz (marca MATESHOP). Los valores de
+ * color/tipografía deben coincidir exactamente con `src/config/brand.ts`
+ * (única fuente de verdad para TypeScript) — CSS no puede importar ese
+ * archivo, así que se duplican acá como variables; si el manual de marca
+ * cambia, actualizar los dos lugares. El resto (superficies, bordes,
+ * sombras) son valores neutros derivados de esa paleta para la UI de la
+ * aplicación, nunca para el diseño que el cliente graba en la virola.
+ */
+:root {
+  --brand-black: #160f0d;
+  --brand-olive: #758a4f;
+  --brand-olive-dark: #5f7140;
+  --brand-offwhite: #f1f8f2;
+  --brand-gray: #52524c;
+
+  /* `logo` (Call Free Room) es de uso puntual de marca/impacto — no se usa
+     para texto de interfaz, solo eventualmente para el wordmark. */
+  --font-ui: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-heading: 'Stack Sans Notch', var(--font-ui);
+  --font-logo: 'Call Free Room', serif;
+
+  --surface: #ffffff;
+  --surface-muted: #faf9f5;
+  --border: #e3e1d8;
+  --border-strong: #c9c6bd;
+
+  --text-primary: var(--brand-black);
+  --text-secondary: var(--brand-gray);
+  --text-muted: #8b887f;
+
+  --danger: #a83a3a;
+  --danger-bg: #fbeeee;
+  --danger-border: #d9b4b4;
+
+  --radius: 8px;
+  --radius-sm: 5px;
+  --shadow-sm: 0 1px 3px rgba(22, 15, 13, 0.12);
+  --shadow-md: 0 8px 24px rgba(22, 15, 13, 0.18);
+
+  --focus-ring: 0 0 0 3px rgba(117, 138, 79, 0.35);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -10,6 +53,25 @@ body,
 }
 
 body {
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  color: #222;
+  font-family: var(--font-ui);
+  color: var(--text-primary);
+  background: var(--surface-muted);
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+/* Foco visible consistente en toda la app (accesibilidad básica, sección 13) —
+   no depende del navegador por defecto, que varía entre Chrome/Firefox/Safari. */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--brand-olive);
+  outline-offset: 2px;
 }

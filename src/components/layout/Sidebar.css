@@ -1,15 +1,15 @@
 .sidebar {
-  width: 320px;
+  width: 340px;
   flex-shrink: 0;
-  padding: 20px;
-  background: #ffffff;
-  border-right: 1px solid #e0ded8;
+  padding: 24px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
   overflow-y: auto;
 }
 
 .sidebar__placeholder {
   font-size: 13px;
-  color: #888580;
+  color: var(--text-muted);
   margin-top: 20px;
 }
 
@@ -21,21 +21,61 @@
 
 .sidebar__add-text {
   width: 100%;
-  padding: 10px 14px;
+  padding: 12px 16px;
   font-size: 14px;
   font-weight: 600;
-  color: #fff;
-  background: #4a4a3f;
-  border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
 }
 
-.sidebar__add-text:hover:not(:disabled) {
-  background: #3a3a32;
+/* Acción primaria (agregar texto): sólida, en el acento de marca. */
+.sidebar__add-buttons .sidebar__add-text:first-child {
+  color: #fff;
+  background: var(--brand-olive);
+  border: 1px solid var(--brand-olive);
 }
 
-.sidebar__add-text:disabled {
-  background: #cfcdc6;
+.sidebar__add-buttons .sidebar__add-text:first-child:hover:not(:disabled) {
+  background: var(--brand-olive-dark);
+  border-color: var(--brand-olive-dark);
+}
+
+.sidebar__add-buttons .sidebar__add-text:first-child:disabled {
+  background: var(--border-strong);
+  border-color: var(--border-strong);
+  color: #fff;
   cursor: default;
+}
+
+/* Acción secundaria (agregar ícono): contorno, mismo acento — jerarquía
+   visual clara sin agregar una funcionalidad nueva. */
+.sidebar__add-buttons .sidebar__add-text:last-child {
+  color: var(--brand-olive-dark);
+  background: transparent;
+  border: 1px solid var(--brand-olive);
+}
+
+.sidebar__add-buttons .sidebar__add-text:last-child:hover:not(:disabled) {
+  background: var(--brand-offwhite);
+}
+
+.sidebar__add-buttons .sidebar__add-text:last-child:disabled {
+  color: var(--text-muted);
+  border-color: var(--border-strong);
+  cursor: default;
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    width: 100%;
+    max-height: 60vh;
+    border-right: none;
+    border-top: 1px solid var(--border);
+    /* El canvas (order: 1, ver MateCanvas.css) queda visualmente primero —
+       la virola sigue siendo lo primero que se ve, aunque en el DOM la
+       sidebar venga antes (irrelevante para lectores de pantalla, que
+       siguen el orden del documento, no el visual). */
+    order: 2;
+  }
 }

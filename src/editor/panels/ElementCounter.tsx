@@ -35,13 +35,16 @@ export function ElementCounter({ counts }: ElementCounterProps) {
 
   return (
     <div className={`element-counter${isAtLimit ? ' element-counter--full' : ''}`}>
-      <span className="element-counter__label">
-        Elementos: {counts.total} / {MAX_DESIGN_ELEMENTS}
-      </span>
+      <div className="element-counter__row">
+        <span className="element-counter__label">Elementos</span>
+        <span className="element-counter__value">
+          {counts.total} / {MAX_DESIGN_ELEMENTS}
+        </span>
+      </div>
       <p className="element-counter__breakdown">
         Texto: {counts.text}/{MAX_TEXT_ELEMENTS} · Íconos: {counts.icon}/{MAX_ICON_ELEMENTS}
       </p>
-      {message && <p className="element-counter__message">{message}</p>}
+      {message && <p className="element-counter__message">{isAtLimit ? '⚠ ' : ''}{message}</p>}
     </div>
   );
 }

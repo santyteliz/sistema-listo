@@ -6,7 +6,8 @@
   min-width: 0;
   height: 100%;
   overflow: auto;
-  background: #f0efe9;
+  padding: 24px;
+  background: var(--brand-offwhite);
 }
 
 /*
@@ -17,6 +18,26 @@
  * por defecto) queda pintado de blanco y tapa todo lo que dibuja el de abajo.
  */
 .mate-canvas .canvas-container {
-  background: #ffffff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  /* El resize real del <canvas> (setDimensions + setZoom en
+     useFabricCanvas.ts) ya evita el overflow en pantallas chicas — este
+     max-width es solo una red de seguridad extra (sección 12). */
+  max-width: 100%;
+}
+
+@media (max-width: 900px) {
+  .mate-canvas {
+    order: 1;
+    padding: 20px 16px;
+    /* Sin esto, el `height: 100%` de la regla base (pensada para el layout
+       de escritorio, en fila) se resuelve contra la altura del body en
+       columna y estira este contenedor a toda la pantalla, dejando un
+       hueco vacío entre la virola y la sidebar de abajo — acá el tamaño
+       debe salir del contenido (el <canvas>, ya escalado en JS), no de la
+       altura disponible. */
+    height: auto;
+    flex: 0 0 auto;
+  }
 }
