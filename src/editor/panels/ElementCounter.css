@@ -12,6 +12,11 @@
   color: #a83a3a;
 }
 
+.element-counter__breakdown {
+  margin: 2px 0 0;
+  color: #888580;
+}
+
 .element-counter__message {
   margin: 4px 0 0;
   color: #a83a3a;

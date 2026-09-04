@@ -2,7 +2,7 @@ import { useEditor } from '../../editor/state/EditorContext';
 import { TextEditorPanel } from '../../editor/panels/TextEditorPanel';
 import { IconEditorPanel } from '../../editor/panels/IconEditorPanel';
 import { ElementCounter } from '../../editor/panels/ElementCounter';
-import { MAX_DESIGN_ELEMENTS } from '../../editor/canvas/designLimits';
+import { MAX_DESIGN_ELEMENTS, MAX_TEXT_ELEMENTS, MAX_ICON_ELEMENTS } from '../../editor/canvas/designLimits';
 import './Sidebar.css';
 
 /**
@@ -11,18 +11,20 @@ import './Sidebar.css';
  * correspondiente (texto, ícono, o estado vacío).
  */
 export function Sidebar() {
-  const { actions, selection, elementCount, openIconPickerToAdd } = useEditor();
-  const isAtLimit = elementCount >= MAX_DESIGN_ELEMENTS;
+  const { actions, selection, elementCounts, openIconPickerToAdd } = useEditor();
+  const isAtTotalLimit = elementCounts.total >= MAX_DESIGN_ELEMENTS;
+  const isTextDisabled = !actions || isAtTotalLimit || elementCounts.text >= MAX_TEXT_ELEMENTS;
+  const isIconDisabled = !actions || isAtTotalLimit || elementCounts.icon >= MAX_ICON_ELEMENTS;
 
   return (
     <aside className="sidebar">
-      <ElementCounter count={elementCount} />
+      <ElementCounter counts={elementCounts} />
 
       <div className="sidebar__add-buttons">
         <button
           type="button"
           className="sidebar__add-text"
-          disabled={!actions || isAtLimit}
+          disabled={isTextDisabled}
           onClick={() => actions?.addCurvedText()}
         >
           Agregar texto
@@ -30,7 +32,7 @@ export function Sidebar() {
         <button
           type="button"
           className="sidebar__add-text"
-          disabled={!actions || isAtLimit}
+          disabled={isIconDisabled}
           onClick={openIconPickerToAdd}
         >
           Agregar ícono

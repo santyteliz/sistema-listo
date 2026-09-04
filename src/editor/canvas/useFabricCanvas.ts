@@ -4,7 +4,7 @@ import { VIROLA_CONFIG } from '../../config/virola.config';
 import { renderGuides } from './guides';
 import { applyTextCurve, getCurveState, isTextObject, toTextSelection } from './curvedText';
 import { isIconObject, toIconSelection } from './iconElement';
-import { countDesignElements } from './designLimits';
+import { getDesignElementCounts, type DesignElementCounts } from './designLimits';
 import { createEditorActions, type EditorActions } from './actions';
 import { preloadEditorFonts } from '../fonts/fontLibrary';
 import type { EditorSelection } from '../state/selection';
@@ -42,7 +42,7 @@ export function useFabricCanvas(
   const canvasRef = useRef<Canvas | null>(null);
   const [actions, setActions] = useState<EditorActions | null>(null);
   const [selection, setSelection] = useState<EditorSelection>({ type: 'none' });
-  const [elementCount, setElementCount] = useState(0);
+  const [elementCounts, setElementCounts] = useState<DesignElementCounts>({ total: 0, text: 0, icon: 0 });
   const onIconDoubleClickRef = useRef(options.onIconDoubleClick);
   onIconDoubleClickRef.current = options.onIconDoubleClick;
 
@@ -105,10 +105,10 @@ export function useFabricCanvas(
     // agrega o saca un objeto del canvas — así no importa si el cambio
     // viene de agregar texto/ícono, eliminar, reemplazar un ícono (que
     // saca uno y agrega otro) o restaurar un diseño completo: siempre
-    // termina reflejando la cantidad real de elementos, sin poder
-    // desincronizarse.
-    function syncElementCount(): void {
-      setElementCount(countDesignElements(canvas));
+    // termina reflejando la cantidad real de elementos (total y por tipo),
+    // sin poder desincronizarse.
+    function syncElementCounts(): void {
+      setElementCounts(getDesignElementCounts(canvas));
     }
 
     canvas.on('selection:created', syncSelectionFromCanvas);
@@ -117,8 +117,8 @@ export function useFabricCanvas(
     canvas.on('text:changed', handleTextChanged);
     canvas.on('object:modified', handleObjectModified);
     canvas.on('mouse:dblclick', handleDoubleClick);
-    canvas.on('object:added', syncElementCount);
-    canvas.on('object:removed', syncElementCount);
+    canvas.on('object:added', syncElementCounts);
+    canvas.on('object:removed', syncElementCounts);
 
     canvas.requestRenderAll();
 
@@ -142,12 +142,12 @@ export function useFabricCanvas(
       canvasRef.current = null;
       setActions(null);
       setSelection({ type: 'none' });
-      setElementCount(0);
+      setElementCounts({ total: 0, text: 0, icon: 0 });
       if (import.meta.env.DEV) {
         delete window.__editorActions;
       }
     };
   }, [canvasElRef]);
 
-  return { actions, selection, elementCount };
+  return { actions, selection, elementCounts };
 }

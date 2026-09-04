@@ -11,7 +11,7 @@ import {
   isIconObject,
   ICON_CUSTOM_PROPERTIES,
 } from './iconElement';
-import { hasReachedDesignLimit } from './designLimits';
+import { canAddDesignElement } from './designLimits';
 
 /** Propiedades propias (no nativas de Fabric) que hay que pedirle a toObject() que incluya. */
 const CUSTOM_PROPERTIES = [...CURVE_CUSTOM_PROPERTIES, ...ICON_CUSTOM_PROPERTIES];
@@ -96,8 +96,9 @@ export function createEditorActions(canvas: Canvas, config: VirolaConfig): Edito
     // Protección en la capa de dominio, no solo en la UI: aunque el botón
     // ya se deshabilita al llegar al máximo (ver Sidebar.tsx), esta función
     // no debe crear un elemento de más aunque alguien la llame de otra
-    // forma.
-    if (hasReachedDesignLimit(canvas)) {
+    // forma. canAddDesignElement chequea el límite total Y el de textos
+    // (máximo 1) en un solo lugar.
+    if (!canAddDesignElement(canvas, 'text')) {
       return;
     }
     const text = createCurvedText(config);
@@ -156,8 +157,9 @@ export function createEditorActions(canvas: Canvas, config: VirolaConfig): Edito
   }
 
   function addIcon(iconId: string): void {
-    // Misma protección que addCurvedText — ver comentario ahí.
-    if (hasReachedDesignLimit(canvas)) {
+    // Misma protección que addCurvedText — ver comentario ahí. Acá el
+    // límite por tipo es 3 íconos, no 1.
+    if (!canAddDesignElement(canvas, 'icon')) {
       return;
     }
     const iconDef = getIconDefinition(iconId);

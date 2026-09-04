@@ -1,6 +1,7 @@
 import { createContext, useContext, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { useFabricCanvas } from '../canvas/useFabricCanvas';
 import type { EditorActions } from '../canvas/actions';
+import type { DesignElementCounts } from '../canvas/designLimits';
 import type { EditorSelection } from './selection';
 
 /**
@@ -18,8 +19,8 @@ interface EditorContextValue {
   actions: EditorActions | null;
   /** Estado mínimo de UI derivado de la selección actual en Fabric.js. */
   selection: EditorSelection;
-  /** Cantidad actual de elementos de diseño reales (sin contar guías). Ver designLimits.ts. */
-  elementCount: number;
+  /** Cantidad actual de elementos de diseño reales, total y por tipo (sin contar guías). Ver designLimits.ts. */
+  elementCounts: DesignElementCounts;
   iconPickerMode: IconPickerMode;
   openIconPickerToAdd: () => void;
   openIconPickerToReplace: () => void;
@@ -37,7 +38,7 @@ const EditorContext = createContext<EditorContextValue | null>(null);
 export function EditorProvider({ children }: { children: ReactNode }) {
   const canvasElRef = useRef<HTMLCanvasElement>(null);
   const [iconPickerMode, setIconPickerMode] = useState<IconPickerMode>('closed');
-  const { actions, selection, elementCount } = useFabricCanvas(canvasElRef, {
+  const { actions, selection, elementCounts } = useFabricCanvas(canvasElRef, {
     onIconDoubleClick: () => setIconPickerMode('replace'),
   });
 
@@ -47,7 +48,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         canvasElRef,
         actions,
         selection,
-        elementCount,
+        elementCounts,
         iconPickerMode,
         openIconPickerToAdd: () => setIconPickerMode('add'),
         openIconPickerToReplace: () => setIconPickerMode('replace'),
