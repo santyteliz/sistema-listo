@@ -57,6 +57,29 @@ export interface VirolaConfig {
    * curvedText.ts, `GLYPH_HEIGHT_RATIO`).
    */
   maxTextGlyphHeight: number;
+  /**
+   * Radio de la línea circular decorativa "Simple" (y radio CENTRAL del par
+   * "Doble", ver `circularLineDoubleOffset`) — ver `circularLines.ts`.
+   *
+   * Vuelto al radio MEDIO de la banda (mismo criterio que `textCurveRadius`/
+   * `iconPlacementRadius`, centrado entre Ø72 y Ø94) — una iteración
+   * intermedia lo había corrido al tercio exterior (~82-88% del ancho de
+   * banda) a partir de una lectura manual del video de referencia de Zizou,
+   * pero esa lectura era una estimación con margen de error reconocido, y
+   * el usuario pidió explícitamente volver al centro de la banda. No
+   * modificar esto de nuevo sin evidencia visual concreta y confirmada.
+   */
+  circularLineRadius: number;
+  /**
+   * Cuánto se separa cada línea del radio medio, hacia cada lado, en la
+   * línea circular decorativa "Doble" (derivado: 10% de `bandWidth` por
+   * lado, así la separación TOTAL entre las dos líneas es el 20% del ancho
+   * de banda real — valor de diseño confirmado con el usuario, no una
+   * referencia visual extraíble de las capturas disponibles en
+   * `referencias/`, que solo muestran el selector en "No"). Ver
+   * `circularLines.ts`.
+   */
+  circularLineDoubleOffset: number;
 }
 
 function buildVirolaConfig(params: {
@@ -80,14 +103,25 @@ function buildVirolaConfig(params: {
     height: outerRadius * 2 + stageMarginPx * 2,
     innerRadius,
     outerRadius,
-    // A mitad de camino entre el borde interior y el exterior de la banda real.
+    // A mitad de camino entre el borde interior y el exterior de la banda real
+    // (radio medio de la franja de diseño, 41.5mm con las medidas actuales:
+    // (47+36)/2). Los íconos usan el MISMO criterio radial que el texto a
+    // propósito — ambos nacen centrados radialmente en la franja — así que
+    // `iconPlacementRadius` comparte exactamente esta fórmula (ver abajo).
     textCurveRadius: innerRadius + bandWidth * 0.5,
-    // Más cerca del borde exterior que el texto, para que nunca coincida
-    // exactamente con textCurveRadius (si compartieran radio, el cuadro
-    // delimitador del texto curvo puede tapar el punto donde arranca un
-    // ícono — ver docs/DECISIONS.md / historial de iconElement.ts).
-    iconPlacementRadius: innerRadius + bandWidth * 0.85,
+    // Antes usaba 0.85 (más cerca del borde exterior que el texto) para
+    // evitar coincidir exactamente con `textCurveRadius` — ya no hace falta:
+    // texto e íconos nuevos ocupan ángulos por defecto distintos (0° el
+    // texto; 180°/90°/270° los íconos, ver `iconElement.ts`), así que
+    // comparten radio sin superponerse. El pedido explícito de esta etapa es
+    // que los íconos nazcan en el mismo radio medio que el texto.
+    iconPlacementRadius: innerRadius + bandWidth * 0.5,
     maxTextGlyphHeight: bandWidth / 2,
+    // Radio medio de la banda — ver el comentario grande de
+    // `circularLineRadius` más arriba (vuelto acá tras una iteración
+    // intermedia que lo había corrido al tercio exterior).
+    circularLineRadius: innerRadius + bandWidth * 0.5,
+    circularLineDoubleOffset: bandWidth * 0.1,
   };
 }
 

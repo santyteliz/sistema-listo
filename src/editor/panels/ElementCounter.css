@@ -4,6 +4,7 @@
   background: var(--surface-muted);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
+  transition: border-color var(--transition-panel);
 }
 
 .element-counter__row {
@@ -14,15 +15,23 @@
 
 .element-counter__label {
   font-family: var(--font-heading);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 400;
   color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-eyebrow);
 }
 
 .element-counter__value {
   font-size: 13px;
   font-weight: 700;
   color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  transition: color var(--transition-panel);
+}
+
+.element-counter--full {
+  border-color: var(--danger-border);
 }
 
 .element-counter--full .element-counter__value {

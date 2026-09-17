@@ -7,9 +7,9 @@ import { isIconObject } from './iconElement';
  * de elemento. Única fuente de verdad — si alguno de estos números cambia,
  * se cambia acá y en ningún otro lugar.
  */
-export const MAX_DESIGN_ELEMENTS = 4;
-export const MAX_TEXT_ELEMENTS = 1;
-export const MAX_ICON_ELEMENTS = 3;
+export const MAX_DESIGN_ELEMENTS = 20;
+export const MAX_TEXT_ELEMENTS = 4;
+export const MAX_ICON_ELEMENTS = 16;
 
 /**
  * Tipos de elemento de diseño reconocidos. `custom-image` todavía no existe

@@ -1,3 +1,22 @@
+/*
+ * Entrada sutil: el panel de edición de texto aparece al tocar "Editar" en
+ * la toolbar — un desplazamiento corto + fade comunica "esto surgió de tu
+ * click", en vez de aparecer de golpe. Nunca depende de esto para funcionar
+ * (la lógica de mostrar/ocultar sigue siendo la de siempre, en React) — es
+ * puramente decorativo, `animation-fill-mode: backwards` evita cualquier
+ * parpadeo inicial.
+ */
+@keyframes text-editor-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .text-editor-panel {
   margin-top: 24px;
   padding-top: 20px;
@@ -5,14 +24,45 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  animation: text-editor-panel-enter 0.18s ease-out backwards;
+}
+
+.text-editor-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .text-editor-panel__title {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 400;
   color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-eyebrow);
+}
+
+.text-editor-panel__close {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--brand-olive);
+  border: 1px solid var(--brand-olive);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color var(--transition-base), border-color var(--transition-base), transform var(--transition-fast);
+}
+
+.text-editor-panel__close:hover {
+  background: var(--brand-olive-dark);
+  border-color: var(--brand-olive-dark);
+}
+
+.text-editor-panel__close:active {
+  transform: scale(0.96);
 }
 
 .text-editor-panel__field {
@@ -34,11 +84,14 @@
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   background: var(--surface);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
 }
 
 .text-editor-panel__field textarea:focus,
 .text-editor-panel__field select:focus {
   border-color: var(--brand-olive);
+  box-shadow: var(--focus-ring);
+  outline: none;
 }
 
 .text-editor-panel__field textarea {
@@ -55,6 +108,8 @@
   font-size: 11px;
   font-weight: 400;
   color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  transition: color var(--transition-base);
 }
 
 .text-editor-panel__char-count--limit {
@@ -80,33 +135,3 @@
   border-radius: var(--radius-sm);
 }
 
-.text-editor-panel__checkbox {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--text-primary);
-}
-
-.text-editor-panel__checkbox input {
-  accent-color: var(--brand-olive);
-  width: 16px;
-  height: 16px;
-}
-
-.text-editor-panel__delete {
-  align-self: flex-start;
-  padding: 8px 14px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--danger);
-  background: var(--surface);
-  border: 1px solid var(--danger-border);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
-
-.text-editor-panel__delete:hover {
-  background: var(--danger-bg);
-}

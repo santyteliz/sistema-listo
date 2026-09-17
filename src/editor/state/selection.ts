@@ -16,6 +16,7 @@ export type EditorSelection =
       /** true si ni siquiera al tamaño mínimo el texto entra en el arco disponible. */
       isOverflowing: boolean;
       inverted: boolean;
+      /** Posición angular alrededor de la virola (0-360°, 0 = arriba, sentido horario). */
       curveOffset: number;
     }
   | {
@@ -23,5 +24,12 @@ export type EditorSelection =
       iconId: string;
       flipX: boolean;
       flipY: boolean;
+      /** Posición angular alrededor de la virola (dónde está ubicado el ícono). */
       angleDeg: number;
+      /** Rotación propia del ícono (su "inclinación"), distinta de `angleDeg`. */
+      rotation: number;
+      scaleX: number;
+      /** Posición actual (coordenadas del canvas, no de pantalla) — para ubicar el menú contextual. */
+      left: number;
+      top: number;
     };

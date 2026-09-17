@@ -13,9 +13,15 @@
     -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!--
+      Sacramento, Alex Brush y Anton no llevan ":wght@400;700" porque en
+      Google Fonts solo existen en un único peso estático (no tienen variante
+      bold) — pedir un peso que no existe hace que la hoja de estilos entera
+      falle a cargar ese family. Las demás (nuevas y viejas) sí lo tienen.
+    -->
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Playfair+Display:wght@400;700&family=Poppins:wght@400;700&family=Merriweather:wght@400;700&family=Dancing+Script:wght@400;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Playfair+Display:wght@400;700&family=Poppins:wght@400;700&family=Merriweather:wght@400;700&family=Dancing+Script:wght@400;700&family=Lora:wght@400;700&family=Sacramento&family=Alex+Brush&family=Anton&family=Cinzel:wght@400;700&family=Oswald:wght@400;700&family=Caveat:wght@400;700&family=Montserrat:wght@400;700&display=swap"
     />
   </head>
   <body>

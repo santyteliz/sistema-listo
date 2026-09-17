@@ -1,27 +1,47 @@
-import type { ChangeEvent } from 'react';
+import { useEffect, useRef, type ChangeEvent } from 'react';
 import type { EditorActions } from '../canvas/actions';
 import { FONT_OPTIONS } from '../fonts/fontLibrary';
 import { MIN_FONT_SIZE, MAX_FONT_SIZE, MAX_TEXT_LENGTH, getCurveOffsetRange } from '../canvas/curvedText';
-import { VIROLA_CONFIG } from '../../config/virola.config';
 import type { EditorSelection } from '../state/selection';
 import './TextEditorPanel.css';
 
 interface TextEditorPanelProps {
   actions: EditorActions;
   selection: Extract<EditorSelection, { type: 'text' }>;
+  /** Cierra el contenedor de edición (no deselecciona el texto ni toca el toolbar). */
+  onClose: () => void;
 }
 
-const CURVE_OFFSET_RANGE = getCurveOffsetRange(VIROLA_CONFIG);
+const CURVE_OFFSET_RANGE = getCurveOffsetRange();
 
 /**
- * Panel contextual del texto seleccionado: contenido, tipografía, tamaño,
- * inversión de la curva, posición sobre el arco, y eliminar. Todo cambio
- * pasa por la capa de acciones — este componente no toca la instancia de
- * Fabric.
+ * Contenedor de edición de contenido del texto seleccionado — se muestra
+ * únicamente cuando el usuario toca "Editar" en el `ContextualToolbar` (ver
+ * `EditorContext.isTextEditorOpen`); seleccionar un texto por sí solo ya NO
+ * lo abre. Invertir, tamaño y eliminar viven únicamente en el
+ * `ContextualToolbar` flotante (no se duplican acá) — este panel es
+ * puramente para el contenido, la tipografía y la posición angular.
+ * Todo cambio pasa por la capa de acciones — este componente no toca la
+ * instancia de Fabric ni el modo de edición nativo de Fabric.js (que queda
+ * desactivado de raíz, ver `editable: false` en `curvedText.ts`).
+ *
+ * El límite de caracteres es un tope fijo (`MAX_TEXT_LENGTH`, ver
+ * curvedText.ts) — dentro de ese tope, el tamaño se sigue ajustando solo
+ * (auto-fit de Etapa 3): menos caracteres permiten un tamaño mayor, más
+ * caracteres lo reducen, y si ni siquiera el tamaño mínimo alcanza,
+ * `isOverflowing` avisa sin deformar ni cortar el texto.
  */
-export function TextEditorPanel({ actions, selection }: TextEditorPanelProps) {
+export function TextEditorPanel({ actions, selection, onClose }: TextEditorPanelProps) {
   const isAutoFitted = selection.fontSize < selection.desiredFontSize;
   const isAtCharLimit = selection.text.length >= MAX_TEXT_LENGTH;
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+
+  // Foco automático apenas se abre el contenedor (un click en "Editar" ya
+  // expresa la intención de escribir) — se dispara una sola vez por
+  // apertura, ya que Sidebar desmonta este componente al cerrarlo.
+  useEffect(() => {
+    contentRef.current?.focus();
+  }, []);
 
   function handleContentChange(event: ChangeEvent<HTMLTextAreaElement>): void {
     actions.updateSelectedTextContent(event.target.value);
@@ -35,21 +55,23 @@ export function TextEditorPanel({ actions, selection }: TextEditorPanelProps) {
     actions.setSelectedTextFontSize(Number(event.target.value));
   }
 
-  function handleInvertedChange(event: ChangeEvent<HTMLInputElement>): void {
-    actions.setSelectedTextInverted(event.target.checked);
-  }
-
   function handleCurveOffsetChange(event: ChangeEvent<HTMLInputElement>): void {
     actions.setSelectedTextCurveOffset(Number(event.target.value));
   }
 
   return (
     <section className="text-editor-panel">
-      <h2 className="text-editor-panel__title">Texto seleccionado</h2>
+      <div className="text-editor-panel__header">
+        <h2 className="text-editor-panel__title">Editar texto</h2>
+        <button type="button" className="text-editor-panel__close" onClick={onClose}>
+          Listo
+        </button>
+      </div>
 
       <label className="text-editor-panel__field">
         Contenido
         <textarea
+          ref={contentRef}
           value={selection.text}
           onChange={handleContentChange}
           rows={2}
@@ -64,7 +86,7 @@ export function TextEditorPanel({ actions, selection }: TextEditorPanelProps) {
         Tipografía
         <select value={selection.fontFamily} onChange={handleFontFamilyChange}>
           {FONT_OPTIONS.map((font) => (
-            <option key={font.label} value={font.label} style={{ fontFamily: font.label }}>
+            <option key={font.family} value={font.family} style={{ fontFamily: font.family }}>
               {font.label}
             </option>
           ))}
@@ -94,13 +116,8 @@ export function TextEditorPanel({ actions, selection }: TextEditorPanelProps) {
         </p>
       )}
 
-      <label className="text-editor-panel__checkbox">
-        <input type="checkbox" checked={selection.inverted} onChange={handleInvertedChange} />
-        Invertir texto
-      </label>
-
       <label className="text-editor-panel__field">
-        Posición sobre la curva
+        Posición alrededor de la virola
         <input
           type="range"
           min={CURVE_OFFSET_RANGE.min}
@@ -109,14 +126,11 @@ export function TextEditorPanel({ actions, selection }: TextEditorPanelProps) {
           onChange={handleCurveOffsetChange}
         />
       </label>
-
-      <button
-        type="button"
-        className="text-editor-panel__delete"
-        onClick={() => actions.removeSelectedObject()}
-      >
-        Eliminar
-      </button>
+      <p className="text-editor-panel__hint">
+        También podés arrastrar el texto directamente sobre el lienzo. Para
+        invertirlo, agrandarlo/achicarlo o eliminarlo, usá el menú que
+        aparece junto al texto al seleccionarlo.
+      </p>
     </section>
   );
 }

@@ -1,13 +1,13 @@
 import { useEditor } from '../state/EditorContext';
-import { ICON_LIBRARY } from '../icons/iconLibrary';
+import { ICON_LIBRARY, type IconDefinition } from '../icons/iconLibrary';
 import './IconPickerModal.css';
 
 /**
- * Selector de íconos de la biblioteca propia. Se reutiliza para dos casos
- * (ver docs de la tarea): agregar un ícono nuevo, y reemplazar el ícono
- * seleccionado (doble click sobre un ícono en el canvas). El modo lo decide
- * `EditorContext` (`iconPickerMode`); este componente solo lee ese estado y
- * llama a la acción correspondiente.
+ * Selector modal de los 6 íconos legacy — reemplazado como selector visible
+ * del usuario por `IconLibraryDrawer.tsx` (Etapa 3, catálogo real de 235
+ * íconos). Se conserva sin usar (no se renderiza desde `EditorPage.tsx`)
+ * como fallback temporal durante la transición, a pedido explícito — no
+ * borrar hasta una etapa de limpieza posterior confirmada.
  *
  * Cada ícono se dibuja con un <path> de React (prop `d`), nunca con
  * `innerHTML` — son recursos propios y controlados (ver iconLibrary.ts).
@@ -19,11 +19,11 @@ export function IconPickerModal() {
     return null;
   }
 
-  function handlePick(iconId: string): void {
+  function handlePick(iconDef: IconDefinition): void {
     if (iconPickerMode === 'add') {
-      actions?.addIcon(iconId);
+      actions?.addIcon(iconDef);
     } else if (iconPickerMode === 'replace') {
-      actions?.replaceSelectedIcon(iconId);
+      actions?.replaceSelectedIcon(iconDef);
     }
     closeIconPicker();
   }
@@ -48,7 +48,7 @@ export function IconPickerModal() {
               key={icon.id}
               type="button"
               className="icon-picker__item"
-              onClick={() => handlePick(icon.id)}
+              onClick={() => handlePick(icon)}
             >
               <svg viewBox="0 0 100 100" aria-hidden="true">
                 <path d={icon.svgPath} fill="none" stroke="currentColor" strokeWidth={6} />

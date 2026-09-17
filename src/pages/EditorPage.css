@@ -19,8 +19,36 @@
  * ancho de cada hijo queda limitado al 100% del viewport en sus propios CSS.
  */
 @media (max-width: 900px) {
+  .editor-page {
+    /*
+     * Etapa 14D.1: `100vh` (regla base, sin tocar para desktop) no sigue la
+     * barra de Safari en iOS cuando aparece/desaparece al hacer scroll — el
+     * navegador la calcula sobre el viewport "grande" (chrome oculto), que
+     * en el momento típico (recién cargada la página, con la barra
+     * visible) es MÁS ALTO que el área realmente visible. Como
+     * `.editor-page` (este contenedor) no tiene su propio scroll — todo el
+     * scroll pensado vive adentro, en `.editor-page__body` — ese excedente
+     * de altura empujaba contenido más allá de lo visible y obligaba al
+     * DOCUMENTO ENTERO a scrollear por su cuenta, una SEGUNDA superficie de
+     * scroll por encima de la de `.editor-page__body` (el mismo problema de
+     * fondo que el del sidebar anidado de la Etapa 14D, pero un nivel más
+     * arriba) — de ahí la sensación de "TopBar y 'Empezar desde cero'
+     * pertenecen a scrolls distintos". `100dvh` (altura dinámica, sigue el
+     * viewport REAL en cada instante) es el reemplazo correcto — se declara
+     * DESPUÉS de la `height: 100vh` de la regla base para que la pise en los
+     * navegadores que la soportan, y quede como no-op (nunca se llega a
+     * este `@media`) en desktop.
+     */
+    height: 100dvh;
+  }
+
   .editor-page__body {
     flex-direction: column;
     overflow-y: auto;
+    /* Momentum scroll nativo de iOS — propiedad estándar, sin librería
+       (Etapa 14D, sección 1: refuerzo, ya que Safari moderno lo hace solo
+       por default en un `overflow:auto`, pero no cuesta nada dejarlo
+       explícito para navegadores/versiones más viejas). */
+    -webkit-overflow-scrolling: touch;
   }
 }

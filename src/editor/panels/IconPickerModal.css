@@ -68,10 +68,11 @@
   background: var(--surface-muted);
   cursor: pointer;
   color: var(--text-primary);
+  transition: background-color var(--transition-base), border-color var(--transition-base);
 }
 
 .icon-picker__item:hover {
-  background: var(--brand-offwhite);
+  background: var(--surface-hover);
   border-color: var(--brand-olive);
 }
 

@@ -21,7 +21,15 @@
   --font-logo: 'Call Free Room', serif;
 
   --surface: #ffffff;
-  --surface-muted: #faf9f5;
+  /*
+   * Etapa 15: antes un crema genérico (#faf9f5) sin relación con la paleta
+   * oficial — el manual de marca del cliente (`recursos-marca/manual-marca`)
+   * define el blanco hueso (#f1f8f2) como el ÚNICO tono claro secundario de
+   * la marca (20% de uso oficial). Unificar acá evita dos "casi blancos"
+   * compitiendo en la misma interfaz y usa el tono que realmente es de
+   * MateShop.
+   */
+  --surface-muted: var(--brand-offwhite);
   --border: #e3e1d8;
   --border-strong: #c9c6bd;
 
@@ -33,12 +41,69 @@
   --danger-bg: #fbeeee;
   --danger-border: #d9b4b4;
 
-  --radius: 8px;
-  --radius-sm: 5px;
+  /*
+   * Etapa 15: antes 8px/5px — un poco más redondeado de lo que refleja la
+   * identidad real de MateShop (radios muy chicos o nulos en botones y
+   * bloques, ver mateshop.com.ar y el manual de marca — composición de
+   * paralelogramos rectos, sin esquinas suaves). Se ajusta hacia una esquina
+   * más ajustada sin llegar a 0 (el pedido explícito es no pasarse para el
+   * lado "infantil"/redondeado, no volverse cortante — esto es una
+   * herramienta, no la tienda).
+   */
+  --radius: 6px;
+  --radius-sm: 4px;
   --shadow-sm: 0 1px 3px rgba(22, 15, 13, 0.12);
   --shadow-md: 0 8px 24px rgba(22, 15, 13, 0.18);
 
   --focus-ring: 0 0 0 3px rgba(117, 138, 79, 0.35);
+
+  /*
+   * Etapa 15 — tokens de movimiento centralizados: antes cada componente
+   * repetía "0.12s ease" (u otro valor cercano) a mano en su propio CSS —
+   * quedan acá una sola vez, reutilizados en todo el sistema (Parte 8 del
+   * pedido: "no dupliques valores innecesariamente"). Duraciones cortas a
+   * propósito (ninguna pasa los ~200ms): la guía de interfaz de Vercel usada
+   * en esta etapa pide animaciones breves donde cada una comunique algo
+   * puntual (hover, click, aparición), nunca decorativas.
+   */
+  --transition-fast: 0.1s ease;
+  --transition-base: 0.16s ease;
+  --transition-panel: 0.18s ease;
+
+  /* Tracking usado en encabezados de sección en mayúsculas ("eyebrows") —
+     mismo recurso tipográfico que ya usa el propio manual de marca del
+     cliente en sus títulos de slide (ej. "PALETA CROMÁTICA"). */
+  --tracking-eyebrow: 0.06em;
+
+  /*
+   * Etapa 15 — necesario tras unificar `--surface-muted` con
+   * `--brand-offwhite` (arriba): varios controles (categorías/ítems de
+   * íconos) tenían su fondo EN REPOSO en `--surface-muted` y pasaban a
+   * `--brand-offwhite` en hover — al ser ahora el mismo color, ese cambio de
+   * fondo quedaba invisible (solo se notaba el borde). Este tono, un lavado
+   * bien sutil de verde oliva, es un fondo de hover genuinamente distinto
+   * tanto del blanco como del blanco hueso, reutilizable en cualquier
+   * control que necesite este mismo patrón.
+   */
+  --surface-hover: rgba(117, 138, 79, 0.1);
+}
+
+/*
+ * Accesibilidad de movimiento (Parte 5 y Parte 7 del pedido, y regla
+ * explícita de las Web Interface Guidelines usadas en esta etapa): quien
+ * pide menos movimiento en su sistema operativo no debe recibir NINGUNA de
+ * las transiciones/animaciones de esta etapa. Una sola regla global cubre
+ * todo el proyecto de una vez, sin tener que repetirla por componente.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 * {

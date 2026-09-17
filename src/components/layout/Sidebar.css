@@ -26,7 +26,11 @@
   font-weight: 600;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  transition: background-color var(--transition-base), border-color var(--transition-base), color var(--transition-base), transform var(--transition-fast);
+}
+
+.sidebar__add-text:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 /* Acción primaria (agregar texto): sólida, en el acento de marca. */
@@ -66,10 +70,99 @@
   cursor: default;
 }
 
+.sidebar__reset {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.sidebar__reset-button {
+  width: 100%;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color var(--transition-base), border-color var(--transition-base), color var(--transition-base);
+}
+
+.sidebar__reset-button:hover:not(:disabled) {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.sidebar__reset-button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.sidebar__reset-message {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+.sidebar__reset-confirm-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.sidebar__reset-cancel,
+.sidebar__reset-confirm {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color var(--transition-base), border-color var(--transition-base), color var(--transition-base), opacity var(--transition-base);
+}
+
+.sidebar__reset-cancel {
+  color: var(--text-primary);
+  background: transparent;
+  border: 1px solid var(--border-strong);
+}
+
+.sidebar__reset-cancel:hover {
+  background: var(--surface-muted);
+}
+
+.sidebar__reset-confirm {
+  color: #fff;
+  background: var(--danger);
+  border: 1px solid var(--danger);
+}
+
+.sidebar__reset-confirm:hover {
+  opacity: 0.9;
+}
+
 @media (max-width: 900px) {
   .sidebar {
     width: 100%;
-    max-height: 60vh;
+    /*
+     * Etapa 14D, sección 1: antes tenía `max-height: 60vh` + heredaba el
+     * `overflow-y: auto` de la regla base (pensada para el layout de
+     * escritorio, donde la sidebar SÍ necesita su propio scroll interno
+     * porque el canvas ocupa el resto de una fila de altura fija) — en
+     * mobile eso creaba un contenedor de scroll ANIDADO dentro del scroll
+     * de `.editor-page__body` (Etapa 4): el navegador le da el swipe al
+     * scroll INTERNO de la sidebar primero, y recién cuando ese se agota
+     * (llega a su propio tope/piso) el mismo swipe empieza a mover la
+     * página completa — de ahí que hicieran falta varios swipes para volver
+     * a ver el TopBar o llegar a "Empezar desde cero". Sacando el límite de
+     * altura y dejando que el contenido fluya, todo el body pasa a
+     * scrollear como una sola región continua (comportamiento nativo de
+     * cualquier página mobile), sin tocar el comportamiento de escritorio
+     * (esa regla base con su propio scroll sigue aplicando arriba de
+     * 900px).
+     */
+    overflow-y: visible;
     border-right: none;
     border-top: 1px solid var(--border);
     /* El canvas (order: 1, ver MateCanvas.css) queda visualmente primero —

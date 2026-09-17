@@ -50,3 +50,14 @@ coverage/
 
 # Cache de Vite
 .vite/
+
+# Etapa 18 — material de trabajo exploratorio (pruebas de concepto de sesiones
+# anteriores, nunca importado desde src/, sin referencias en docs/) y archivos de
+# diagnóstico huérfanos (sin referencias desde src/ ni index.html) — no forman parte
+# del producto, no hace falta versionarlos.
+scratchpad/
+public/diagnostics/
+
+# Video de referencia de Zizou — ya procesado y documentado en
+# referencias/Zizou/analisis/, eliminado del repo por su peso (~76MB).
+referencias/Zizou/zizou referencia.mp4

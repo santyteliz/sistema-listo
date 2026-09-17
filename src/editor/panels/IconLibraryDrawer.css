@@ -1,0 +1,319 @@
+@keyframes icon-drawer-backdrop-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes icon-drawer-enter {
+  from {
+    transform: translateX(16px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.icon-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(22, 15, 13, 0.45);
+  display: flex;
+  justify-content: flex-end;
+  z-index: 100;
+  animation: icon-drawer-backdrop-enter 0.18s ease-out;
+}
+
+.icon-drawer {
+  width: 400px;
+  max-width: 100%;
+  height: 100%;
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+  animation: icon-drawer-enter 0.22s ease-out;
+}
+
+.icon-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.icon-drawer__header h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-eyebrow);
+}
+
+.icon-drawer__close {
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-base), background-color var(--transition-base), transform var(--transition-fast);
+}
+
+.icon-drawer__close:hover {
+  color: var(--text-primary);
+  background: var(--surface-muted);
+}
+
+.icon-drawer__close:active {
+  transform: scale(0.9);
+}
+
+.icon-drawer__back {
+  align-self: flex-start;
+  border: none;
+  background: transparent;
+  color: var(--brand-olive-dark);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 0;
+  flex-shrink: 0;
+  transition: color var(--transition-base);
+}
+
+.icon-drawer__back:hover {
+  text-decoration: underline;
+}
+
+.icon-drawer__body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.icon-drawer__status {
+  color: var(--text-secondary);
+  font-size: 14px;
+  text-align: center;
+  margin-top: 24px;
+}
+
+.icon-drawer__status--error {
+  color: var(--danger);
+}
+
+.icon-drawer__categories {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.icon-drawer__category {
+  width: 100%;
+  text-align: left;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color var(--transition-base), border-color var(--transition-base);
+}
+
+.icon-drawer__category:hover {
+  background: var(--surface-hover);
+  border-color: var(--brand-olive);
+}
+
+.icon-drawer__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 10px;
+}
+
+.icon-drawer__item {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  cursor: pointer;
+  transition: background-color var(--transition-base), border-color var(--transition-base);
+}
+
+.icon-drawer__item:hover {
+  background: var(--surface-hover);
+  border-color: var(--brand-olive);
+}
+
+.icon-drawer__item img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.icon-drawer__upload-cta {
+  width: 100%;
+  text-align: center;
+  padding: 12px 16px;
+  margin-bottom: 4px;
+  border: 1px dashed var(--brand-olive);
+  border-radius: var(--radius-sm);
+  background: var(--brand-offwhite);
+  color: var(--brand-olive-dark);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color var(--transition-base);
+}
+
+.icon-drawer__upload-cta:hover {
+  background: var(--surface-hover);
+}
+
+.icon-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.icon-upload__dropzone {
+  display: block;
+  position: relative;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: 32px 16px;
+  text-align: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+.icon-upload__dropzone:hover,
+.icon-upload__dropzone--active {
+  border-color: var(--brand-olive);
+  background: var(--brand-offwhite);
+}
+
+.icon-upload__title {
+  margin: 0 0 6px;
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+.icon-upload__hint {
+  margin: 0;
+  font-size: 13px;
+}
+
+.icon-upload__meta {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
+.icon-upload__file-input {
+  /* Se usa solo para abrir el explorador de archivos vía click en la
+     dropzone (el <label> que lo envuelve) — el input real queda invisible
+     pero sigue siendo enfocable/operable por teclado (Tab + Enter/Espacio)
+     para no romper accesibilidad. */
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.icon-upload__dropzone:focus-within {
+  /* El <input> real queda con opacity:0 (ver más arriba), así que su
+     propio outline de foco también quedaría invisible — el anillo de foco
+     se dibuja acá, en el <label> que sí se ve, cuando el input de adentro
+     tiene foco (Tab). */
+  outline: 2px solid var(--brand-olive-dark);
+  outline-offset: 2px;
+}
+
+.icon-upload__preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+}
+
+.icon-upload__preview-canvas {
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+}
+
+.icon-upload__preview-canvas .icon-geometry-preview__svg,
+.icon-upload__preview-canvas .icon-geometry-preview__canvas {
+  width: 100px;
+  height: 100px;
+  color: var(--text-primary);
+}
+
+.icon-upload__preview-status {
+  margin: 0;
+  font-size: 12px;
+  color: var(--brand-olive-dark);
+}
+
+.icon-upload__preview-name {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.icon-upload__preview-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.icon-upload__primary,
+.icon-upload__secondary {
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.icon-upload__primary {
+  border: none;
+  background: var(--brand-olive-dark);
+  color: var(--surface);
+}
+
+.icon-upload__secondary {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-primary);
+}
+
+@media (max-width: 480px) {
+  .icon-drawer {
+    width: 100%;
+  }
+}

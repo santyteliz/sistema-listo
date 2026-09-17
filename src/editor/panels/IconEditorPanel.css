@@ -1,3 +1,14 @@
+@keyframes icon-editor-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .icon-editor-panel {
   margin-top: 24px;
   padding-top: 20px;
@@ -5,14 +16,17 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  animation: icon-editor-panel-enter 0.18s ease-out backwards;
 }
 
 .icon-editor-panel__title {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 400;
   color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-eyebrow);
 }
 
 .icon-editor-panel__current {
@@ -25,7 +39,8 @@
   border-radius: var(--radius-sm);
 }
 
-.icon-editor-panel__current svg {
+.icon-editor-panel__current .icon-geometry-preview__svg,
+.icon-editor-panel__current .icon-geometry-preview__canvas {
   width: 28px;
   height: 28px;
   color: var(--text-primary);
@@ -47,30 +62,21 @@
   border: 1px solid var(--brand-olive);
   border-radius: var(--radius-sm);
   cursor: pointer;
+  transition: background-color var(--transition-base), transform var(--transition-fast);
 }
 
 .icon-editor-panel__change:hover {
   background: var(--brand-offwhite);
 }
 
+.icon-editor-panel__change:active {
+  transform: scale(0.96);
+}
+
 .icon-editor-panel__hint {
   margin: -6px 0 0;
   font-size: 11px;
   color: var(--text-muted);
-}
-
-.icon-editor-panel__checkbox {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--text-primary);
-}
-
-.icon-editor-panel__checkbox input {
-  accent-color: var(--brand-olive);
-  width: 16px;
-  height: 16px;
 }
 
 .icon-editor-panel__field {
@@ -85,20 +91,4 @@
 .icon-editor-panel__field input[type='range'] {
   width: 100%;
   accent-color: var(--brand-olive);
-}
-
-.icon-editor-panel__delete {
-  align-self: flex-start;
-  padding: 8px 14px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--danger);
-  background: var(--surface);
-  border: 1px solid var(--danger-border);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
-
-.icon-editor-panel__delete:hover {
-  background: var(--danger-bg);
 }

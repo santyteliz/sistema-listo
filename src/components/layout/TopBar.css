@@ -5,7 +5,13 @@
   height: 60px;
   padding: 0 24px;
   background: var(--surface);
-  border-bottom: 1px solid var(--border);
+  /* Etapa 15: borde de 2px (antes 1px) en el negro de marca (antes
+     `--border`, un gris neutro genérico) — el manual de marca pide que el
+     negro tenga tanto peso visual como el verde oliva (35%/35%), y hoy esa
+     proporción prácticamente no existía en la interfaz (el negro quedaba
+     limitado al texto). Un filo más marcado en el límite superior de toda
+     la herramienta es una forma discreta de devolverle presencia real. */
+  border-bottom: 2px solid var(--brand-black);
   flex-shrink: 0;
 }
 
@@ -17,11 +23,122 @@
 
 .top-bar__title {
   font-family: var(--font-heading);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 400;
   color: var(--text-secondary);
   padding-left: 12px;
   border-left: 1px solid var(--border);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-eyebrow);
+}
+
+.top-bar__history {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.top-bar__confirm {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/*
+ * Etapa 15: pasa de verde oliva a negro de marca. Es la acción más
+ * importante de toda la herramienta (genera los archivos finales de
+ * producción) — dársela al color más fuerte de la paleta, no al mismo verde
+ * que ya usan botones secundarios (Agregar texto/ícono, Invertir, etc.),
+ * crea una jerarquía real entre "acción principal de todo el editor" y
+ * "acción de un elemento puntual". También corrige la proporción
+ * cromática: antes el negro de marca (35% oficial) no aparecía en ningún
+ * fondo real de la interfaz, solo en texto/bordes.
+ */
+.top-bar__confirm-button {
+  padding: 9px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand-offwhite);
+  background: var(--brand-black);
+  border: 1px solid var(--brand-black);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color var(--transition-base), border-color var(--transition-base), transform var(--transition-fast);
+}
+
+.top-bar__confirm-button:hover:not(:disabled) {
+  background: #2a1f1c;
+  border-color: #2a1f1c;
+}
+
+.top-bar__confirm-button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.top-bar__confirm-button:disabled {
+  background: var(--surface-muted);
+  border-color: var(--border);
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.top-bar__confirm-status {
+  font-size: 12px;
+  color: var(--brand-olive-dark);
+  white-space: nowrap;
+}
+
+.top-bar__confirm-status--error {
+  color: var(--danger);
+}
+
+.top-bar__history-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color var(--transition-base), border-color var(--transition-base), color var(--transition-base), transform var(--transition-fast);
+}
+
+.top-bar__history-button svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  transition: transform var(--transition-base);
+}
+
+.top-bar__history-button:hover:not(:disabled) {
+  background: var(--surface-muted);
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+
+/* Microinteracción con significado: la flecha de Deshacer/Rehacer "gira"
+   levemente al pasar el mouse — refuerza qué acción hace cada botón sin
+   agregar texto ni cambiar layout. */
+.top-bar__history-button:hover:not(:disabled) svg {
+  transform: rotate(-8deg);
+}
+
+.top-bar__history-button[aria-label='Rehacer']:hover:not(:disabled) svg {
+  transform: rotate(8deg);
+}
+
+.top-bar__history-button:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.top-bar__history-button:disabled {
+  color: var(--text-muted);
+  opacity: 0.5;
+  cursor: default;
 }
 
 @media (max-width: 600px) {
@@ -38,5 +155,45 @@
   .top-bar__title {
     font-size: 11px;
     padding-left: 8px;
+  }
+
+  .top-bar__confirm-button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .top-bar__confirm-status {
+    display: none; /* en pantallas chicas, el foco es el botón — el mensaje de estado no entra sin romper el layout */
+  }
+
+  .top-bar__history-button {
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+}
+
+/*
+ * Etapa 14B (mobile): por debajo de esto, el título decorativo + los
+ * botones Deshacer/Rehacer CON texto + el botón Confirmar ya no entran
+ * juntos en una sola fila (medido en Chrome real a 320/375/390px:
+ * `scrollWidth` de `.top-bar` daba 457px, mayor al viewport, generando
+ * scroll horizontal de TODA la página — ver el informe de la Etapa 14B).
+ * Se saca lo decorativo/redundante primero (el título ya repite lo que dice
+ * el propio logo "MATESHOP", y el texto de Deshacer/Rehacer ya lo dice el
+ * ícono + `aria-label`/`title`, que siguen intactos) antes de tocar nada del
+ * botón "Confirmar diseño" (la acción más importante de la barra, nunca se
+ * achica su texto).
+ */
+@media (max-width: 430px) {
+  .top-bar__title {
+    display: none;
+  }
+
+  .top-bar__history-button span {
+    display: none;
+  }
+
+  .top-bar__history-button {
+    padding: 6px;
   }
 }

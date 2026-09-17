@@ -1,0 +1,149 @@
+/*
+ * Etapa 15, punto 2: el menú se monta/desmonta por completo en React
+ * (`if (!isVisible...) return null`, ver ContextualToolbar.tsx) — CSS no
+ * puede animar una salida de un nodo que ya no existe en el DOM sin
+ * retrasar ese desmontaje desde React, y tocar CUÁNDO se desmonta está
+ * explícitamente fuera de esta etapa (podría alterar el timing de clicks-
+ * afuera-cierran-el-menú o de la captura de pointer de un gesto en curso).
+ * Por eso acá solo se anima la ENTRADA: un fade + achique sutil (con `scale`
+ * como propiedad independiente de `transform`, nunca mezclada con él, para
+ * no pisar el `transform: translate(...)` de posicionamiento que ya define
+ * cada `.contextual-toolbar--<placement>` más abajo).
+ */
+@keyframes contextual-toolbar-enter {
+  from {
+    opacity: 0;
+    scale: 0.92;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+.contextual-toolbar {
+  position: fixed;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: var(--shadow-md);
+  animation: contextual-toolbar-enter 0.14s ease-out backwards;
+}
+
+/*
+ * Una clase por cada una de las 8 posiciones posibles (ver `Placement` en
+ * ContextualToolbar.tsx): el `transform` corre el menú entero para que el
+ * punto de anclaje (`left`/`top` en línea) quede siempre en el borde del
+ * menú que da HACIA el elemento — nunca en su centro — así el cuerpo del
+ * menú cae siempre del lado que se aleja del anillo, sin superponerse.
+ */
+.contextual-toolbar--top {
+  transform: translate(-50%, -100%);
+}
+
+.contextual-toolbar--top-right {
+  transform: translate(0%, -100%);
+}
+
+.contextual-toolbar--right {
+  transform: translate(0%, -50%);
+}
+
+.contextual-toolbar--bottom-right {
+  transform: translate(0%, 0%);
+}
+
+.contextual-toolbar--bottom {
+  transform: translate(-50%, 0%);
+}
+
+.contextual-toolbar--bottom-left {
+  transform: translate(-100%, 0%);
+}
+
+.contextual-toolbar--left {
+  transform: translate(-100%, -50%);
+}
+
+.contextual-toolbar--top-left {
+  transform: translate(-100%, -100%);
+}
+
+.contextual-toolbar__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.contextual-toolbar__btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.contextual-toolbar__btn:hover {
+  background: var(--brand-offwhite);
+}
+
+/* Controles gestuales (tamaño, rotación): press-and-drag, no un click —
+   `touch-action: none` evita que el navegador interprete el arrastre como
+   scroll/zoom en touch, y el cursor "grab" comunica que hay que sostenerlo. */
+.contextual-toolbar__btn--gesture {
+  cursor: grab;
+  touch-action: none;
+}
+
+.contextual-toolbar__btn--gesture:active {
+  cursor: grabbing;
+  background: var(--brand-offwhite);
+}
+
+.contextual-toolbar__btn--active {
+  background: var(--brand-olive);
+  color: #fff;
+}
+
+.contextual-toolbar__btn--active:hover {
+  background: var(--brand-olive-dark);
+}
+
+.contextual-toolbar__btn--danger {
+  color: var(--danger);
+}
+
+.contextual-toolbar__btn--danger:hover {
+  background: var(--danger-bg);
+}
+
+/*
+ * Mientras un gesto de tamaño/rotación está en curso (ver `activeGestureKind`
+ * en ContextualToolbar.tsx), todos los botones del menú quedan fuera de
+ * interacción — ni hover ni click — EXCEPTO el que efectivamente inició el
+ * gesto (`--gesture-active`, la segunda regla, con más especificidad para
+ * ganarle a la primera pase lo que pase con el orden de las reglas).
+ * `setPointerCapture` ya redirige los EVENTOS al botón que capturó el
+ * pointer, pero el `:hover` de CSS se calcula solo por dónde está el cursor,
+ * sin importar la captura — sin esto, arrastrar Tamaño y pasar por encima de
+ * Rotar/Invertir/Eliminar los mostraba "iluminados" como si fueran a
+ * reaccionar, aunque el click nunca fuera a llegarles.
+ */
+.contextual-toolbar--gesture-active .contextual-toolbar__btn {
+  pointer-events: none;
+}
+
+.contextual-toolbar--gesture-active .contextual-toolbar__btn.contextual-toolbar__btn--gesture-active {
+  pointer-events: auto;
+}

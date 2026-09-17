@@ -22,5 +22,9 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["vite.config.ts"]
+  "include": [
+    "vite.config.ts",
+    "src/editor/icons/normalizeIconPath.test.ts",
+    "src/editor/icons/iconCatalog.test.ts"
+  ]
 }

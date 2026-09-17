@@ -25,5 +25,11 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  // Los "*.test.ts" corren con el test runner nativo de Node (`node --test`,
+  // ver src/editor/icons/*.test.ts) — son scripts de Node, no código de
+  // browser, así que necesitan los tipos de Node ("node:test"/"node:assert")
+  // que este proyecto (tipos de browser + Vite) no expone a propósito.
+  // Cubiertos aparte por tsconfig.node.json, igual que ya hacía vite.config.ts.
+  "exclude": ["src/**/*.test.ts"]
 }
