@@ -1,0 +1,11 @@
+# SPA fallback — redirige todas las rutas que no sean archivos reales a
+# index.html para que React maneje el routing del lado del cliente.
+# Necesario para que /personalizar funcione al refrescar la página.
+#
+# Las rutas a archivos reales (assets, fonts, icons, brand, etc.) se
+# sirven normalmente sin pasar por este fallback.
+
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.html [QSA,L]
