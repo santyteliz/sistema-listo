@@ -1,174 +1,25 @@
-.sidebar {
-  width: 340px;
-  flex-shrink: 0;
-  padding: 24px;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  overflow-y: auto;
-}
-
-.sidebar__placeholder {
-  font-size: 13px;
-  color: var(--text-muted);
-  margin-top: 20px;
-}
-
-.sidebar__add-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.sidebar__add-text {
-  width: 100%;
-  padding: 12px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: background-color var(--transition-base), border-color var(--transition-base), color var(--transition-base), transform var(--transition-fast);
-}
-
-.sidebar__add-text:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-/* Acción primaria (agregar texto): sólida, en el acento de marca. */
-.sidebar__add-buttons .sidebar__add-text:first-child {
-  color: #fff;
-  background: var(--brand-olive);
-  border: 1px solid var(--brand-olive);
-}
-
-.sidebar__add-buttons .sidebar__add-text:first-child:hover:not(:disabled) {
-  background: var(--brand-olive-dark);
-  border-color: var(--brand-olive-dark);
-}
-
-.sidebar__add-buttons .sidebar__add-text:first-child:disabled {
-  background: var(--border-strong);
-  border-color: var(--border-strong);
-  color: #fff;
-  cursor: default;
-}
-
-/* Acción secundaria (agregar ícono): contorno, mismo acento — jerarquía
-   visual clara sin agregar una funcionalidad nueva. */
-.sidebar__add-buttons .sidebar__add-text:last-child {
-  color: var(--brand-olive-dark);
-  background: transparent;
-  border: 1px solid var(--brand-olive);
-}
-
-.sidebar__add-buttons .sidebar__add-text:last-child:hover:not(:disabled) {
-  background: var(--brand-offwhite);
-}
-
-.sidebar__add-buttons .sidebar__add-text:last-child:disabled {
-  color: var(--text-muted);
-  border-color: var(--border-strong);
-  cursor: default;
-}
-
-.sidebar__reset {
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border);
-}
-
-.sidebar__reset-button {
-  width: 100%;
-  padding: 10px 16px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-muted);
-  background: transparent;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: background-color var(--transition-base), border-color var(--transition-base), color var(--transition-base);
-}
-
-.sidebar__reset-button:hover:not(:disabled) {
-  color: var(--danger);
-  border-color: var(--danger);
-}
-
-.sidebar__reset-button:disabled {
-  cursor: default;
-  opacity: 0.6;
-}
-
-.sidebar__reset-message {
-  margin: 0 0 10px;
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--text-primary);
-}
-
-.sidebar__reset-confirm-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.sidebar__reset-cancel,
-.sidebar__reset-confirm {
-  flex: 1;
-  padding: 10px 12px;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: background-color var(--transition-base), border-color var(--transition-base), color var(--transition-base), opacity var(--transition-base);
-}
-
-.sidebar__reset-cancel {
-  color: var(--text-primary);
-  background: transparent;
-  border: 1px solid var(--border-strong);
-}
-
-.sidebar__reset-cancel:hover {
-  background: var(--surface-muted);
-}
-
-.sidebar__reset-confirm {
-  color: #fff;
-  background: var(--danger);
-  border: 1px solid var(--danger);
-}
-
-.sidebar__reset-confirm:hover {
-  opacity: 0.9;
-}
-
-@media (max-width: 900px) {
-  .sidebar {
-    width: 100%;
-    /*
-     * Etapa 14D, sección 1: antes tenía `max-height: 60vh` + heredaba el
-     * `overflow-y: auto` de la regla base (pensada para el layout de
-     * escritorio, donde la sidebar SÍ necesita su propio scroll interno
-     * porque el canvas ocupa el resto de una fila de altura fija) — en
-     * mobile eso creaba un contenedor de scroll ANIDADO dentro del scroll
-     * de `.editor-page__body` (Etapa 4): el navegador le da el swipe al
-     * scroll INTERNO de la sidebar primero, y recién cuando ese se agota
-     * (llega a su propio tope/piso) el mismo swipe empieza a mover la
-     * página completa — de ahí que hicieran falta varios swipes para volver
-     * a ver el TopBar o llegar a "Empezar desde cero". Sacando el límite de
-     * altura y dejando que el contenido fluya, todo el body pasa a
-     * scrollear como una sola región continua (comportamiento nativo de
-     * cualquier página mobile), sin tocar el comportamiento de escritorio
-     * (esa regla base con su propio scroll sigue aplicando arriba de
-     * 900px).
-     */
-    overflow-y: visible;
-    border-right: none;
-    border-top: 1px solid var(--border);
-    /* El canvas (order: 1, ver MateCanvas.css) queda visualmente primero —
-       la virola sigue siendo lo primero que se ve, aunque en el DOM la
-       sidebar venga antes (irrelevante para lectores de pantalla, que
-       siguen el orden del documento, no el visual). */
-    order: 2;
-  }
-}
+.sidebar { z-index:2; width:350px; padding:24px 22px 28px; overflow-y:auto; overscroll-behavior:contain; background:rgba(241,248,242,.82); border-right:1px solid rgba(22,15,13,.08); box-shadow:10px 0 28px rgba(22,15,13,.025); }
+.sidebar__placeholder { margin:26px 2px; color:var(--text-muted); font-size:13px; line-height:1.55; }
+.sidebar__toolbox { display:grid; gap:10px; }
+.sidebar__section-label { display:flex; align-items:center; gap:9px; margin:0; color:var(--text-secondary); font-family:var(--font-heading); font-size:11px; font-weight:400; letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; }
+.sidebar__section-label::after { width:22px; height:1px; content:''; background:var(--brand-olive); transform:skewX(-24deg); transform-origin:left; }
+.sidebar__add-buttons { display:grid; gap:8px; padding-bottom:2px; }
+.sidebar__add-text { display:flex; align-items:center; justify-content:flex-start; gap:11px; width:100%; min-height:48px; padding:11px 15px; font-size:13px; font-weight:650; letter-spacing:.005em; text-align:left; border-radius:var(--radius-sm); cursor:pointer; transition:background-color var(--transition-base),border-color var(--transition-base),color var(--transition-base),transform var(--transition-fast),box-shadow var(--transition-base); }
+.sidebar__add-text svg { width:19px; height:19px; flex:none; }
+.sidebar__add-text span { flex:1; }
+.sidebar__add-text:active:not(:disabled) { transform:scale(.985); }
+.sidebar__add-buttons .sidebar__add-text:first-child { color:#fff; background:var(--brand-olive); border:1px solid var(--brand-olive); box-shadow:0 7px 16px rgba(95,113,64,.18); }
+.sidebar__add-buttons .sidebar__add-text:last-child { color:var(--brand-black); background:rgba(255,255,255,.7); border:1px solid var(--border); }
+.sidebar__add-text:disabled { color:var(--text-muted) !important; background:rgba(255,255,255,.45) !important; border-color:var(--border) !important; box-shadow:none !important; cursor:default; }
+.sidebar__reset { margin-top:30px; padding-top:22px; border-top:1px solid var(--border); }
+.sidebar__reset-button,.sidebar__reset-cancel,.sidebar__reset-confirm { min-height:42px; padding:9px 13px; font-size:12px; font-weight:650; border-radius:var(--radius-sm); cursor:pointer; transition:background-color var(--transition-base),border-color var(--transition-base),color var(--transition-base),transform var(--transition-fast); }
+.sidebar__reset-button { width:100%; color:var(--text-secondary); background:transparent; border:1px solid var(--border-strong); }
+.sidebar__reset-message { margin:0 0 12px; color:var(--text-primary); font-size:13px; line-height:1.5; }
+.sidebar__reset-confirm-buttons { display:flex; gap:8px; }
+.sidebar__reset-cancel,.sidebar__reset-confirm { flex:1; }
+.sidebar__reset-cancel { color:var(--text-primary); background:rgba(255,255,255,.55); border:1px solid var(--border); }
+.sidebar__reset-confirm { color:#fff; background:var(--danger); border:1px solid var(--danger); }
+.sidebar__reset-button:disabled { opacity:.45; cursor:default; }
+@media (hover:hover) and (pointer:fine) { .sidebar__add-buttons .sidebar__add-text:first-child:hover:not(:disabled) { background:var(--brand-olive-dark); box-shadow:0 9px 20px rgba(95,113,64,.24); } .sidebar__add-buttons .sidebar__add-text:last-child:hover:not(:disabled),.sidebar__reset-cancel:hover { background:#fff; border-color:rgba(117,138,79,.45); } .sidebar__reset-button:hover:not(:disabled) { color:var(--danger); border-color:var(--danger); } .sidebar__reset-confirm:hover { background:#913030; } }
+@media (max-width:900px) { .sidebar { order:2; width:100%; padding:22px max(16px,env(safe-area-inset-right)) calc(28px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left)); overflow:visible; border-top:1px solid var(--border); border-right:0; background:var(--surface-muted); box-shadow:0 -8px 24px rgba(22,15,13,.025); } .sidebar__add-buttons { grid-template-columns:repeat(2,minmax(0,1fr)); } .sidebar__add-text { min-height:50px; padding-inline:13px; } }
+@media (max-width:420px) { .sidebar__add-buttons { grid-template-columns:1fr; } }

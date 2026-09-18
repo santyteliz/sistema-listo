@@ -42,24 +42,34 @@ export function Sidebar() {
     <aside className="sidebar">
       <ElementCounter counts={elementCounts} />
 
-      <div className="sidebar__add-buttons">
-        <button
-          type="button"
-          className="sidebar__add-text"
-          disabled={isTextDisabled}
-          onClick={() => actions?.addCurvedText()}
-        >
-          Agregar texto
-        </button>
-        <button
-          type="button"
-          className="sidebar__add-text"
-          disabled={isIconDisabled}
-          onClick={openIconPickerToAdd}
-        >
-          Agregar ícono
-        </button>
-      </div>
+      <section className="sidebar__toolbox" aria-label="Herramientas de diseño">
+        <h2 className="sidebar__section-label">Herramientas</h2>
+        <div className="sidebar__add-buttons">
+          <button
+            type="button"
+            className="sidebar__add-text"
+            disabled={isTextDisabled}
+            onClick={() => actions?.addCurvedText()}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 5h14M12 5v14M8 19h8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
+            <span>Agregar texto</span>
+          </button>
+          <button
+            type="button"
+            className="sidebar__add-text"
+            disabled={isIconDisabled}
+            onClick={openIconPickerToAdd}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 5.5h8.5L18 9v9.5H6zM14 5.5V9h4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M12 11v5M9.5 13.5h5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
+            <span>Agregar ícono</span>
+          </button>
+        </div>
+      </section>
 
       <CircularLinesPanel actions={actions} style={circularLineStyle} />
 

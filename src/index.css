@@ -1,142 +1,26 @@
-/**
- * Tokens visuales globales de la interfaz (marca MATESHOP). Los valores de
- * color/tipografía deben coincidir exactamente con `src/config/brand.ts`
- * (única fuente de verdad para TypeScript) — CSS no puede importar ese
- * archivo, así que se duplican acá como variables; si el manual de marca
- * cambia, actualizar los dos lugares. El resto (superficies, bordes,
- * sombras) son valores neutros derivados de esa paleta para la UI de la
- * aplicación, nunca para el diseño que el cliente graba en la virola.
- */
+/* MateShop visual foundation — presentation only. */
 :root {
-  --brand-black: #160f0d;
-  --brand-olive: #758a4f;
-  --brand-olive-dark: #5f7140;
-  --brand-offwhite: #f1f8f2;
-  --brand-gray: #52524c;
-
-  /* `logo` (Call Free Room) es de uso puntual de marca/impacto — no se usa
-     para texto de interfaz, solo eventualmente para el wordmark. */
-  --font-ui: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-heading: 'Stack Sans Notch', var(--font-ui);
-  --font-logo: 'Call Free Room', serif;
-
-  --surface: #ffffff;
-  /*
-   * Etapa 15: antes un crema genérico (#faf9f5) sin relación con la paleta
-   * oficial — el manual de marca del cliente (`recursos-marca/manual-marca`)
-   * define el blanco hueso (#f1f8f2) como el ÚNICO tono claro secundario de
-   * la marca (20% de uso oficial). Unificar acá evita dos "casi blancos"
-   * compitiendo en la misma interfaz y usa el tono que realmente es de
-   * MateShop.
-   */
-  --surface-muted: var(--brand-offwhite);
-  --border: #e3e1d8;
-  --border-strong: #c9c6bd;
-
-  --text-primary: var(--brand-black);
-  --text-secondary: var(--brand-gray);
-  --text-muted: #8b887f;
-
-  --danger: #a83a3a;
-  --danger-bg: #fbeeee;
-  --danger-border: #d9b4b4;
-
-  /*
-   * Etapa 15: antes 8px/5px — un poco más redondeado de lo que refleja la
-   * identidad real de MateShop (radios muy chicos o nulos en botones y
-   * bloques, ver mateshop.com.ar y el manual de marca — composición de
-   * paralelogramos rectos, sin esquinas suaves). Se ajusta hacia una esquina
-   * más ajustada sin llegar a 0 (el pedido explícito es no pasarse para el
-   * lado "infantil"/redondeado, no volverse cortante — esto es una
-   * herramienta, no la tienda).
-   */
-  --radius: 6px;
-  --radius-sm: 4px;
-  --shadow-sm: 0 1px 3px rgba(22, 15, 13, 0.12);
-  --shadow-md: 0 8px 24px rgba(22, 15, 13, 0.18);
-
-  --focus-ring: 0 0 0 3px rgba(117, 138, 79, 0.35);
-
-  /*
-   * Etapa 15 — tokens de movimiento centralizados: antes cada componente
-   * repetía "0.12s ease" (u otro valor cercano) a mano en su propio CSS —
-   * quedan acá una sola vez, reutilizados en todo el sistema (Parte 8 del
-   * pedido: "no dupliques valores innecesariamente"). Duraciones cortas a
-   * propósito (ninguna pasa los ~200ms): la guía de interfaz de Vercel usada
-   * en esta etapa pide animaciones breves donde cada una comunique algo
-   * puntual (hover, click, aparición), nunca decorativas.
-   */
-  --transition-fast: 0.1s ease;
-  --transition-base: 0.16s ease;
-  --transition-panel: 0.18s ease;
-
-  /* Tracking usado en encabezados de sección en mayúsculas ("eyebrows") —
-     mismo recurso tipográfico que ya usa el propio manual de marca del
-     cliente en sus títulos de slide (ej. "PALETA CROMÁTICA"). */
-  --tracking-eyebrow: 0.06em;
-
-  /*
-   * Etapa 15 — necesario tras unificar `--surface-muted` con
-   * `--brand-offwhite` (arriba): varios controles (categorías/ítems de
-   * íconos) tenían su fondo EN REPOSO en `--surface-muted` y pasaban a
-   * `--brand-offwhite` en hover — al ser ahora el mismo color, ese cambio de
-   * fondo quedaba invisible (solo se notaba el borde). Este tono, un lavado
-   * bien sutil de verde oliva, es un fondo de hover genuinamente distinto
-   * tanto del blanco como del blanco hueso, reutilizable en cualquier
-   * control que necesite este mismo patrón.
-   */
-  --surface-hover: rgba(117, 138, 79, 0.1);
+  --brand-black: #160f0d; --brand-olive: #758a4f; --brand-olive-dark: #5f7140; --brand-offwhite: #f1f8f2; --brand-gray: #52524c;
+  --font-ui: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; --font-heading: 'Stack Sans Notch', var(--font-ui); --font-logo: 'Call Free Room', serif;
+  --surface: #fff; --surface-muted: #f1f8f2; --surface-deep: #e7eee8; --surface-glass: rgba(255,255,255,.72); --surface-glass-strong: rgba(255,255,255,.88); --surface-ink-glass: rgba(22,15,13,.82);
+  --border: rgba(22,15,13,.11); --border-strong: rgba(22,15,13,.2); --border-glass: rgba(255,255,255,.62);
+  --text-primary: var(--brand-black); --text-secondary: #52524c; --text-muted: #777871; --danger: #a83a3a; --danger-bg: #fdf0ef; --danger-border: rgba(168,58,58,.28);
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px; --space-6: 32px;
+  --radius-xs: 8px; --radius-sm: 12px; --radius: 18px; --radius-lg: 24px;
+  --shadow-subtle: 0 1px 2px rgba(22,15,13,.06), 0 5px 16px rgba(22,15,13,.05); --shadow-md: 0 16px 44px rgba(22,15,13,.13), 0 2px 7px rgba(22,15,13,.07); --shadow-floating: 0 24px 60px rgba(22,15,13,.2), 0 4px 14px rgba(22,15,13,.1);
+  --blur-sm: blur(12px) saturate(135%); --blur-md: blur(20px) saturate(150%); --ease-out: cubic-bezier(.23,1,.32,1); --transition-fast: 120ms var(--ease-out); --transition-base: 180ms var(--ease-out); --transition-panel: 240ms var(--ease-out); --focus-ring: 0 0 0 3px rgba(117,138,79,.32), 0 0 0 1px rgba(22,15,13,.14); --tracking-eyebrow: .075em;
 }
-
-/*
- * Accesibilidad de movimiento (Parte 5 y Parte 7 del pedido, y regla
- * explícita de las Web Interface Guidelines usadas en esta etapa): quien
- * pide menos movimiento en su sistema operativo no debe recibir NINGUNA de
- * las transiciones/animaciones de esta etapa. Una sola regla global cubre
- * todo el proyecto de una vez, sin tener que repetirla por componente.
- */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html,
-body,
-#root {
-  margin: 0;
-  height: 100%;
-}
-
-body {
-  font-family: var(--font-ui);
-  color: var(--text-primary);
-  background: var(--surface-muted);
-}
-
-button,
-input,
-select,
-textarea {
-  font-family: inherit;
-}
-
-/* Foco visible consistente en toda la app (accesibilidad básica, sección 13) —
-   no depende del navegador por defecto, que varía entre Chrome/Firefox/Safari. */
-button:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible,
-a:focus-visible {
-  outline: 2px solid var(--brand-olive);
-  outline-offset: 2px;
-}
+* { box-sizing: border-box; }
+html { color-scheme: light; -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; overscroll-behavior: none; }
+html, body, #root { margin: 0; height: 100%; }
+body { font-family: var(--font-ui); color: var(--text-primary); background: var(--surface-deep); font-kerning: normal; text-rendering: optimizeLegibility; font-synthesis: none; }
+::selection { color: var(--brand-offwhite); background: var(--brand-olive); }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { border: 3px solid transparent; border-radius: 999px; background: rgba(82,82,76,.42); background-clip: padding-box; }
+button, input, select, textarea { font: inherit; }
+button, [role='button'] { touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+@media (pointer: coarse) { input, select, textarea { font-size: 16px; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; scroll-behavior: auto !important; } }
+@media (prefers-reduced-transparency: reduce) { .top-bar, .contextual-toolbar, .icon-drawer, .icon-picker { backdrop-filter: none !important; background: var(--surface-glass-strong) !important; } }
