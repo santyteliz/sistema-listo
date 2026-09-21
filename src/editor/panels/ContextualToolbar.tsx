@@ -459,6 +459,8 @@ export function ContextualToolbar() {
   const menuRef = useRef<HTMLDivElement>(null);
   const menuSizeCacheRef = useRef<Partial<Record<'text' | 'icon', { width: number; height: number }>>>({});
   const gestureRef = useRef<DragGesture | null>(null);
+  const scrollDismissTimeoutRef = useRef<number | null>(null);
+  const [isScrollDismissing, setIsScrollDismissing] = useState(false);
   /**
    * Espejo en estado de React de "qué gesto está en curso" (o `null`), solo
    * para poder aplicar una clase CSS que apague hover/click de los botones
@@ -493,6 +495,40 @@ export function ContextualToolbar() {
   }, []);
 
   const isVisible = isContextMenuOpen && selection.type !== 'none' && !!actions;
+
+  // En mobile el scroll ocurre dentro del cuerpo del editor, mientras que el
+  // menú está anclado al viewport. Al desplazar el panel se cierra solamente
+  // el menú contextual, conservando la selección y todas sus acciones: un
+  // nuevo toque sobre el elemento seleccionado lo abre otra vez en su lugar.
+  useEffect(() => {
+    const isCompactViewport = pointerIsCoarse || window.innerWidth <= 900;
+    if (!isVisible || !isCompactViewport) {
+      return;
+    }
+    const scrollContainer = document.querySelector<HTMLElement>('.editor-page__body');
+    if (!scrollContainer) {
+      return;
+    }
+    function dismissForScroll(): void {
+      if (scrollDismissTimeoutRef.current !== null) {
+        return;
+      }
+      setIsScrollDismissing(true);
+      scrollDismissTimeoutRef.current = window.setTimeout(() => {
+        scrollDismissTimeoutRef.current = null;
+        closeContextMenu();
+        setIsScrollDismissing(false);
+      }, 140);
+    }
+    scrollContainer.addEventListener('scroll', dismissForScroll, { passive: true });
+    return () => scrollContainer.removeEventListener('scroll', dismissForScroll);
+  }, [isVisible, pointerIsCoarse, closeContextMenu]);
+
+  useEffect(() => () => {
+    if (scrollDismissTimeoutRef.current !== null) {
+      window.clearTimeout(scrollDismissTimeoutRef.current);
+    }
+  }, []);
 
   useEffect(() => {
     if (!isVisible || !actions) {
@@ -783,12 +819,13 @@ export function ContextualToolbar() {
   // (el `:hover` de CSS depende de la posición del cursor, no de quién
   // capturó el pointer) y, en teoría, podría llegar a disparar su click.
   const gestureActiveClass = activeGestureKind ? ' contextual-toolbar--gesture-active' : '';
+  const scrollDismissingClass = isScrollDismissing ? ' contextual-toolbar--leaving' : '';
   const isSizeGestureActive = activeGestureKind === 'text-size' || activeGestureKind === 'icon-size';
   const isRotateGestureActive = activeGestureKind === 'icon-rotate';
 
   if (selection.type === 'text') {
     return (
-      <div id="contextual-toolbar" ref={menuRef} className={`contextual-toolbar contextual-toolbar--${placement}${gestureActiveClass}`} style={style}>
+      <div id="contextual-toolbar" ref={menuRef} className={`contextual-toolbar contextual-toolbar--${placement}${gestureActiveClass}${scrollDismissingClass}`} style={style}>
         <button
           type="button"
           className="contextual-toolbar__btn"
@@ -847,7 +884,7 @@ export function ContextualToolbar() {
   }
 
   return (
-    <div id="contextual-toolbar" ref={menuRef} className={`contextual-toolbar contextual-toolbar--${placement}${gestureActiveClass}`} style={style}>
+    <div id="contextual-toolbar" ref={menuRef} className={`contextual-toolbar contextual-toolbar--${placement}${gestureActiveClass}${scrollDismissingClass}`} style={style}>
       {/*
         Etapa 14C, sección 7: en un dispositivo de puntero "coarse" (touch
         primario — ver `usePointerIsCoarse`), el tamaño y la rotación del

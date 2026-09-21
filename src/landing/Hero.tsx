@@ -29,6 +29,13 @@ export function Hero({ onCreateMate }: HeroProps) {
         <GlassButton label={exiting ? 'ABRIENDO…' : 'EMPEZAR A PERSONALIZAR'} onClick={handleCreateMate} disabled={exiting} />
       </div>
       <div className="hero-product"><ProductCarousel /></div>
+      <footer className="hero-footer" aria-label="Origen y calidad de MateShop">
+        <div className="hero-footer__pattern" aria-hidden="true" />
+        <div className="hero-footer__content">
+          <p>CALABAZA DE MISIONES <span>·</span> CUERO DE ENTRE RÍOS <span>·</span> TERMINADO A MANO EN MIRAMAR</p>
+          <p className="hero-footer__question">¿Estás para unos <strong>mates?</strong></p>
+        </div>
+      </footer>
       <div data-banner-slot="future" hidden />
     </main>
   )
