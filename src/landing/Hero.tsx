@@ -27,6 +27,9 @@ export function Hero({ onCreateMate }: HeroProps) {
         <p>Elegí los detalles y hacelo tuyo.</p>
         <GlassButton label={exiting ? 'ABRIENDO…' : 'EMPEZAR A PERSONALIZAR'} onClick={handleCreateMate} disabled={exiting} />
       </div>
+      <footer className="hero-footer hero-footer--question" aria-label="MateShop">
+        <p className="hero-footer__question">¿Estás para unos <strong>mates?</strong></p>
+      </footer>
       <div data-banner-slot="future" hidden />
     </main>
   )
